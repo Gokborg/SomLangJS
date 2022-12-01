@@ -1,0 +1,4 @@
+uint b = 3;
+uint a = {1, 2, 3}
+
+uint b = a + 5;

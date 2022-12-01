@@ -1,0 +1,8 @@
+uint[] a = 1;
+uint b = 2;
+a = a + b + 6;
+b = 1;
+
+if a == 5 {
+  uint c = 3;
+}

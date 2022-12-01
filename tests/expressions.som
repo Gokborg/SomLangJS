@@ -1,0 +1,6 @@
+uint x = 1 + 3 * 4 + 2;
+
+uint y = 10;
+uint z = 40;
+uint w = y + z;
+w = y / z;

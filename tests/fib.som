@@ -1,0 +1,13 @@
+uint a = 0;
+uint b = 1;
+
+//"output" will just be whatever is in a
+//since output doesnt exist im just putting in comments where to out
+
+while 1 {
+  //output a
+  a = a + b;
+  //outupt a
+  b = b + a;
+  //output b
+}
