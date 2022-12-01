@@ -46,6 +46,7 @@ export class Token {
     public line: string,
     public lineno: number,
     public start: number,
+    public file_name: string,
   ){}
 
   eq(kind: Kind): boolean {

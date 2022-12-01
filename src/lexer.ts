@@ -60,7 +60,7 @@ const double_symbols: Record<string, Kind> = {
     "//": Kind.COMMENT,
 }
 
-export function lex(lines: string[]) : Token[]{
+export function lex(lines: string[], file_name = "<eval>") : Token[]{
     const tokens: Token[] = []
     const buf: Buffer = new Buffer()
     let lineno = 0;
@@ -75,7 +75,7 @@ export function lex(lines: string[]) : Token[]{
                     num += buf.current;
                 }
                 tokens.push(
-                    new Token(Kind.NUMBER, num, line, lineno, start)
+                    new Token(Kind.NUMBER, num, line, lineno, start, file_name)
                 );
             }
             else if(isAlpha(buf.current)) {
@@ -93,7 +93,7 @@ export function lex(lines: string[]) : Token[]{
                     kind = Kind.MACROCALL;
                 }
                 tokens.push(
-                    new Token(kind, word, line, lineno, start)
+                    new Token(kind, word, line, lineno, start, file_name)
                 );
             }
             else {
@@ -112,7 +112,7 @@ export function lex(lines: string[]) : Token[]{
                         buf.done = true;
                     } else {
                         tokens.push(
-                            new Token(symbol_kind, current, line, lineno, buf.pos)
+                            new Token(symbol_kind, current, line, lineno, buf.pos, file_name)
                         );
                     }
                 }
