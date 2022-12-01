@@ -1,5 +1,5 @@
-import {Token, Kind} from "./token";
-import { Type } from "./type";
+import {Token, Kind} from "./token.ts";
+import { Type } from "./type.ts";
 
 //Statements
 //=============================================
