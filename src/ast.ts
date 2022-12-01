@@ -3,125 +3,81 @@ import { Type } from "./type.ts";
 
 //Statements
 //=============================================
-interface Statement {}
+export type Statement = Body | IfStatement | WhileStatement
+    | MacroDeclaration | MacroCall | Declaration | Assignment;
 
-class Body implements Statement {
-    content: Statement[];
-    constructor(content: Statement[]) {
-        this.content = content;
+export interface IStatement {}
+
+export class Body implements IStatement {
+    constructor(public content: IStatement[]) {}
+}
+
+export class IfStatement implements IStatement {
+    constructor(
+        public condition: IExpression,
+        public body: Body,
+        public child: Body | IfStatement
+    ) {
     }
 }
 
-class IfStatement implements Statement {
-    condition: Expression;
-    body: Body;
-    child: Body | IfStatement;
-    constructor(condition: Expression, body: Body, child: Body | IfStatement) {
-        this.condition = condition;
-        this.body = body;
-        this.child = child;
-    }
+export class WhileStatement implements IStatement {
+    constructor(public condition: IExpression, public body: Body) {}
 }
 
-class WhileStatement implements Statement {
-    condition: Expression;
-    body: Body;
-    constructor(condition: Expression, body: Body) {
-        this.condition = condition;
-        this.body = body;
-    }
+export class MacroDeclaration implements IStatement {
+    constructor(
+        public name: Identifier,
+        public args: IExpression[],
+        public body: Body
+    ) {}
 }
 
-class MacroDeclaration implements Statement {
-    name: Identifier;
-    args: Expression[];
-    body: Body;
-    constructor(name: Identifier, args: Expression[], body: Body) {
-        this.name = name;
-        this.args = args;
-        this.body = body;
-    }
+export class MacroCall implements IStatement {
+    constructor(public name: Identifier, public args: IExpression[]) {}
 }
 
-class MacroCall implements Statement {
-    name: Identifier;
-    args: Expression[];
-    constructor(name: Identifier, args: Expression[]) {
-        this.name = name;
-        this.args = args;
-    }
+export class Declaration implements IStatement {
+    constructor(
+        public vartype: VarType,
+        public name: Identifier,
+        public expr: IExpression
+    ) {}
 }
 
-class Declaration implements Statement {
-    vartype: VarType;
-    name: Identifier;
-    expr: Expression;
-    constructor(vartype: VarType, name: Identifier, expr: Expression) {
-        this.vartype = vartype;
-        this.name = name;
-        this.expr = expr;
-    }
+export class Assignment implements IStatement {
+    constructor(public name: Identifier, public expr: IExpression) {}
 }
 
-class Assignment implements Statement {
-    name: Identifier;
-    expr: Expression;
-    constructor(name: Identifier, expr: Expression) {
-        this.name = name;
-        this.expr = expr;
-    }
-}
-
-class VarType {
-    type: Type;
-    token: Token;
-    constructor(type: Type, token: Token) {
-        this.type = type;
-        this.token = token;
-    }
+export class VarType {
+    constructor(public type: Type, public token: Token) {}
 }
 
 //Expressions
 //=============================================
-interface Expression {}
+export type Expression = Number | Identifier | BinaryOp | ArrayLiteral | ArrayAccess;
+export interface IExpression {}
 
-class Number implements Expression {
-    token: Token;
-    constructor(token: Token) {
-        this.token = token;
-    }
+export class Number implements IExpression {
+    constructor(public token: Token) {}
 }
 
-class Identifier implements Expression {
-    token: Token;
-    constructor(token: Token) {
-        this.token = token;
-    }
+export class Identifier implements IExpression {
+    constructor(public token: Token) {}
 }
 
-class BinaryOp implements Expression {
-    expr1: Expression;
-    op: Token;
-    expr2: Expression;
-    constructor(expr1: Expression, op: Token, expr2: Expression) {
-        this.expr1 = expr1;
-        this.op = op;
-        this.expr2 = expr2;
-    }
+export class BinaryOp implements IExpression {
+    constructor(
+        public expr1: IExpression,
+        public op: Token,
+        public expr2: IExpression
+    ) {}
 }
 
-class ArrayLiteral implements Expression {
-    items: Expression[];
-    constructor(items: Expression[]) {
-        this.items = items;
-    }
+export class ArrayLiteral implements IExpression {
+    constructor(public items: IExpression[]) {}
 }
 
-class ArrayAccess implements Expression {
-    array: Identifier;
-    index: Expression;
-    constructor(array: Identifier, index: Expression) {
-        this.array = array;
-        this.index = index;
-    }
+export class ArrayAccess implements IExpression {
+    constructor(public array: Identifier, public index: IExpression) {}
 }
