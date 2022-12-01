@@ -6,17 +6,17 @@ const enum ErrorLevel {
 
 class Info {
   constructor(
-    public token: Optional<Token>,
+    public token: undefined | Token,
     public msg: string,
     public level = ErrorLevel.Error
   ) {}
   static msg(msg: string) {
     return new Info(undefined, msg);
   }
-  toString(){
+  toString(file_name = "<eval>"){
     let output = "";
     if (this.token) {
-      output += `${this.token.file_name}:${this.token.lineno}:${this.token.start}: `;
+      output += `${file_name}:${this.token.lineno}:${this.token.start}: `;
     }
     output += `${this.level}: ${this.msg}\n`;
     if (this.token) {
@@ -28,10 +28,14 @@ class Info {
   }
 }
 
-class ErrorContext {
+export class ErrorContext {
   infos: Info[] = []
   warnings: Info[] = []
   errors: Info[] = []
+
+  has_error() {
+    return this.errors.length > 0;
+  }
 
   throw(token: Token, msg: string): never {
     this.print_errors()
@@ -68,18 +72,21 @@ class ErrorContext {
     for (const error of this.errors) {
       messages += error.toString();
     }
+
     if (this.warnings) {
       messages += "[WARNINGS]:\n"
     }
     for (const error of this.warnings) {
       messages += error.toString();
     }
+
     if (this.warnings) {
       messages += "[INFO]:\n"
     }
     for (const error of this.infos) {
       messages += error.toString();
     }
+
     return messages
   }
   print_errors() {

@@ -1,3 +1,3 @@
 
-type int = number;
-type Optional<T> = undefined | T;
+declare type int = number;
+declare type Optional<T> = undefined | T;

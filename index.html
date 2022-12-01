@@ -5,23 +5,65 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Test</title>
+  <style>
+    body, textarea {
+      background-color: black;
+      color: white;
+    }
+  </style>
   <script type="module">
-    import {lex} from "./target/compiler.js";
+    import {lex, Parser } from "./target/compiler.js";
     const code = document.getElementsByTagName("textarea")[0];
-    const output = document.getElementsByTagName("output")[0];
+    const errorOutput = document.getElementsByTagName("output")[0];
+    const lexOutput = document.getElementsByTagName("output")[1];
+    const parseOutput = document.getElementsByTagName("output")[2];
 
     code.oninput = e => {
-      const results = lex(code.value.split("\n"));
-      let string = "";
-      for (const r of results) {
-        string += JSON.stringify(r) + "\n";
+      errorOutput.value = "";
+      lexOutput.value = "";
+      parseOutput.value = "";
+      try {
+        const results = lex(code.value.split("\n"));
+        let lexString = "";
+        for (const r of results) {
+          lexString += r + "\n";
+        }
+        lexOutput.value = lexString;
+        
+        const parseResults = new Parser().parse(results);
+        let parseString = "";
+        for (const r of parseResults) {
+          console.log(r);
+          parseString += r.toString() + "\n"; // JSON.stringify(r, null, 2) + "\n";
+        } 
+        parseOutput.value = parseString;
+      } catch (e) {
+        errorOutput.value = "[ERROR]:\n" + e.message;
       }
-      output.value = string;
     };
+    code.oninput();
   </script>
 </head>
 <body>
-  <textarea id="code"></textarea><br>
-  <output id="output" style="white-space: pre;"></output>
+  <textarea id="code" cols="80" rows="20">uint a = 10;
+if a > 10 {
+  a = 20;
+} else {
+  a = 40;
+}
+
+uint b = [1, 2, 3];
+  </textarea><br>
+  <output id="error" style="white-space: pre-wrap; width: 100%;"></output>
+  <div style="display: flex;">
+    <div style="width: 100%;">
+      <h2>Lexer</h2>
+      <output id="lexer" style="white-space: pre-wrap; width: 100%;"></output>
+    </div>
+    <div style="width: 100%;">
+      <h2>Parser</h2>
+      <output id="parser" style="white-space: pre-wrap; width: 100%;"></output>
+    </div>
+  </div>
 </body>
 </html>

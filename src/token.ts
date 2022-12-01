@@ -46,7 +46,6 @@ export class Token {
     public line: string,
     public lineno: number,
     public start: number,
-    public file_name: string,
   ){}
 
   eq(kind: Kind): boolean {
@@ -54,6 +53,6 @@ export class Token {
   }
 
   toString(): string {
-    return `Token${JSON.stringify(this)}`;
+    return `Token(${this.kind} ${this.lineno}:${this.start} ${JSON.stringify(this.value)})`;
   }
 }

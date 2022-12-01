@@ -75,7 +75,7 @@ export function lex(lines: string[], file_name = "<eval>") : Token[]{
                     num += buf.current;
                 }
                 tokens.push(
-                    new Token(Kind.NUMBER, num, line, lineno, start, file_name)
+                    new Token(Kind.NUMBER, num, line, lineno, start)
                 );
             }
             else if(isAlpha(buf.current)) {
@@ -93,7 +93,7 @@ export function lex(lines: string[], file_name = "<eval>") : Token[]{
                     kind = Kind.MACROCALL;
                 }
                 tokens.push(
-                    new Token(kind, word, line, lineno, start, file_name)
+                    new Token(kind, word, line, lineno, start)
                 );
             }
             else {
@@ -112,7 +112,7 @@ export function lex(lines: string[], file_name = "<eval>") : Token[]{
                         buf.done = true;
                     } else {
                         tokens.push(
-                            new Token(symbol_kind, current, line, lineno, buf.pos, file_name)
+                            new Token(symbol_kind, current, line, lineno, buf.pos)
                         );
                     }
                 }

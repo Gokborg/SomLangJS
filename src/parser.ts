@@ -1,0 +1,25 @@
+import * as ast from "./ast.ts";
+import {Token} from "./token.ts";
+import {TokenBuffer} from "./tokenbuffer.ts";
+import { ErrorContext } from "./errors.ts";
+
+import { parseStatement } from "./parser/stmtparser.ts";
+export class Parser {
+    err: ErrorContext;
+    buf: TokenBuffer;
+
+    constructor() {
+        this.err = new ErrorContext();
+        this.buf = new TokenBuffer(this.err);
+    }
+
+    parse(tokens: Token[]) : ast.Statement[] {
+        const ast_nodes: ast.Statement[] = [];
+        this.buf.set(tokens);
+        while(!this.buf.done) {
+            ast_nodes.push(parseStatement(this));
+        }
+        return ast_nodes;
+
+    }
+}
