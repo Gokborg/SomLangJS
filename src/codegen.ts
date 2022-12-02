@@ -5,6 +5,7 @@ export class Asm {
     constructor() {
         this.instrs = [];
     }
+
     toString() {
         return this.instrs.join("\n");
     }
@@ -20,6 +21,15 @@ export class Asm {
     }
     putADD(dest: number, srcA: number, srcB: number) {
         this.instrs.push("ADD R" + dest + " R" + srcA + " R" + srcB);
+    }
+    putSUB(dest: number, srcA: number, srcB: number) {
+        this.instrs.push("SUB R" + dest + " R" + srcA + " R" + srcB);
+    }
+    putMULT(dest: number, srcA: number, srcB: number) {
+        this.instrs.push("MULT R" + dest + " R" + srcA + " R" + srcB);
+    }
+    putDIV(dest: number, srcA: number, srcB: number) {
+        this.instrs.push("DIV R" + dest + " R" + srcA + " R" + srcB);
     }
 }
 
@@ -43,7 +53,7 @@ export class CodeGeneration {
             this.genDeclaration(statement);
         }
         else if(statement instanceof ast.Assignment) {
-
+            this.genAssignment(statement);
         }
         else if(statement instanceof ast.IfStatement) {
 
@@ -68,6 +78,18 @@ export class CodeGeneration {
         }
     }
 
+    genAssignment(assign: ast.Assignment) {
+        const varName: string = assign.name.token.value;
+        const addr: number = this.allocator.hasVariable(varName);
+        if(addr == -1) {
+            //generate error, variable was never declared
+            return;
+        }
+        const reg: number = this.genExpression(assign.expr);
+        this.asm.putSTORE(addr, reg);
+        this.allocator.setFreeRegister(reg);
+    }
+
     genExpression(expr: ast.Expression) : number{
         if(expr instanceof ast.Number) {
             const reg: number = this.allocator.getFreeRegister();
@@ -85,15 +107,26 @@ export class CodeGeneration {
             const reg2: number = this.genExpression(expr.expr2);
             switch(expr.op.value) {
                 case "+": {
-                    this.asm.putADD(reg1, reg1, reg2);
-                    break;
+                    this.asm.putADD(reg1, reg1, reg2); break;
+                }
+                case "-": {
+                    this.asm.putSUB(reg1, reg1, reg2); break;
+                }
+                case "*": {
+                    this.asm.putMULT(reg1, reg1, reg2); break;
+                }
+                case "/": {
+                    this.asm.putDIV(reg1, reg1, reg2); break;
+                }
+                default : {
+                    //Generate error - operator token is incorrect
                 }
             }
             this.allocator.setFreeRegister(reg2);
             return reg1;
         }
         else {
-            //Generate error 
+            //Generate error - the expr token is incorrect
             return -1;
         }
     }
@@ -110,6 +143,13 @@ class Allocator {
         this.registers.fill(false);
         this.memory = new Array(512);
         this.memory.fill(false);
+    }
+
+    hasVariable(varName: string) : number {
+        if(varName in this.varToMemory) {
+            return this.varToMemory[varName];
+        }
+        return -1;
     }
 
     addVariable(varName: string) : number {
