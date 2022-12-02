@@ -55,7 +55,7 @@ function parseExprL1(parser: Parser) : ast.Expression {
         case Kind.OPEN_SQUARE: {
             const items: ast.Expression[] = [];
             if(parser.buf.next_if(Kind.CLOSE_SQUARE)) {
-              return new ast.ArrayLiteral(items);
+              return new ast.ArrayLiteral(current, items);
             }
             items.push(parseExpression(parser));
             while(!parser.buf.current.eq(Kind.CLOSE_SQUARE)) {
@@ -63,7 +63,7 @@ function parseExprL1(parser: Parser) : ast.Expression {
                 items.push(parseExpression(parser));
             }
             parser.buf.next();
-            return new ast.ArrayLiteral(items);
+            return new ast.ArrayLiteral(current, items);
         }
         case Kind.OPEN_PARAN: {
             const expr: ast.Expression = parseExpression(parser);
