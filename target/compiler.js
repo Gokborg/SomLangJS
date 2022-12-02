@@ -906,7 +906,7 @@ class Asm {
         this.instrs.push("DIV R" + dest + " R" + srcA + " R" + srcB);
     }
     putBRANCH(instr, label, left, right) {
-        this.instrs.push(instr + " " + label + " " + left + " " + right);
+        this.instrs.push(instr + " " + label + " R" + left + " R" + right);
     }
     putLABEL(label) {
         this.instrs.push(label);
@@ -937,7 +937,9 @@ class CodeGeneration {
             this.genAssignment(statement);
         } else if (statement instanceof IfStatement) {
             this.genIfStatement(statement, undefined, undefined);
-        } else if (statement instanceof WhileStatement) {} else {
+        } else if (statement instanceof WhileStatement) {
+            this.genWhileStatement(statement);
+        } else {
             return;
         }
     }

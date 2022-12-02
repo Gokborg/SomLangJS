@@ -30,7 +30,7 @@ export class Asm {
         this.instrs.push("DIV R" + dest + " R" + srcA + " R" + srcB);
     }
     putBRANCH(instr: string, label: string, left: number, right: number) {
-        this.instrs.push(instr + " " + label + " " + left + " " + right);
+        this.instrs.push(instr + " " + label + " R" + left + " R" + right);
     }
     putLABEL(label: string) {
         this.instrs.push(label);
@@ -70,7 +70,7 @@ export class CodeGeneration {
             this.genIfStatement(statement, undefined, undefined);
         }
         else if(statement instanceof ast.WhileStatement) {
-
+            this.genWhileStatement(statement);
         }
         else {
             //No code gen for this statement
