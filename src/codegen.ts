@@ -61,6 +61,7 @@ export class CodeGeneration {
         if(dec.expr) {
             const reg: number = this.genExpression(dec.expr);
             this.asm.putSTORE(addr, reg)
+            this.allocator.setFreeRegister(reg);
         }
     }
 
