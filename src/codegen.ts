@@ -260,20 +260,22 @@ class Allocator {
     getFreeRegister() : number {
         const addr: number = this.registers.indexOf(false);
         this.registers[addr] = true;
-        return addr;
+        return addr+1;
     }
 
     getFreeMemory() : number {
         const addr: number = this.memory.indexOf(false);
         this.memory[addr] = true;
-        return addr;
+        return addr+1;
     }
 
     setFreeRegister(reg: number) {
+        reg--;
         this.registers[reg] = false;
     }
 
     setFreeMemory(mem: number) {
+        mem--;
         this.memory[mem] = false;
     }
 }

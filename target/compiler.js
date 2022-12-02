@@ -1116,17 +1116,19 @@ class Allocator {
     getFreeRegister() {
         const addr = this.registers.indexOf(false);
         this.registers[addr] = true;
-        return addr;
+        return addr + 1;
     }
     getFreeMemory() {
         const addr = this.memory.indexOf(false);
         this.memory[addr] = true;
-        return addr;
+        return addr + 1;
     }
     setFreeRegister(reg) {
+        reg--;
         this.registers[reg] = false;
     }
     setFreeMemory(mem) {
+        mem--;
         this.memory[mem] = false;
     }
 }
