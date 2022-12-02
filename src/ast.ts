@@ -1,9 +1,7 @@
 import {Token, Kind} from "./token.ts";
 import { Type } from "./type.ts";
 
-export interface AstNode {
-
-}
+export interface AstNode {}
 
 //Statements
 //=============================================
@@ -33,7 +31,7 @@ export class IfStatement implements IStatement {
     }
   }
 
-  export class WhileStatement implements IStatement {
+export class WhileStatement implements IStatement {
     constructor(public condition: IExpression, public body: Body) {}
 
     toString() {
@@ -53,7 +51,7 @@ export class MacroDeclaration implements IStatement {
     }
   }
   
-  export class MacroCall implements IStatement {
+export class MacroCall implements IStatement {
     constructor(public name: Identifier, public args: IExpression[]) {}
     toString() {
       return `MacroCall(${this.name} ${this.args.join(", ")}})`;
@@ -64,7 +62,7 @@ export class Declaration implements IStatement {
     constructor(
         public vartype: VarType,
         public name: Identifier,
-        public expr?: IExpression
+        public expr?: Expression
     ) {}
 
     toString() {
@@ -107,9 +105,9 @@ export class Identifier implements IExpression {
 
 export class BinaryOp implements IExpression {
     constructor(
-        public expr1: IExpression,
+        public expr1: Expression,
         public op: Token,
-        public expr2: IExpression
+        public expr2: Expression
     ) {}
 
     toString() {
@@ -124,7 +122,7 @@ export class ArrayLiteral implements IExpression {
     }
   }
   
-  export class ArrayAccess implements IExpression {
+export class ArrayAccess implements IExpression {
     constructor(public array: Identifier, public index: IExpression) {}
     toString() {
       return `ArrayAccess(${this.array} ${this.index})`;

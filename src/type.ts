@@ -1,3 +1,4 @@
+
 export type Type = IType & (Prim | ArrayType | Pointer);
 export interface IType {
   toString(): string;

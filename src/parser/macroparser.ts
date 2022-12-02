@@ -1,8 +1,7 @@
 import * as ast from "../ast.ts";
-import { Kind, Token } from "../token.ts";
+import { Kind } from "../token.ts";
 import { Parser } from "../parser.ts";
 
-import { parseExpression } from "./exprparser.ts";
 import { parseBody } from "./bodyparser.ts";
 import { parseArguments } from "./argsparser.ts";
 
