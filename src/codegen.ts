@@ -5,6 +5,9 @@ export class Asm {
     constructor() {
         this.instrs = [];
     }
+    toString() {
+        return this.instrs.join("\n");
+    }
 
     putLI(dest: number, value: number) {
         this.instrs.push("IMM R" + dest + " " + value);

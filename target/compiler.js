@@ -248,7 +248,7 @@ var Info = class {
     if (this.token) {
       output += `${this.token.line}
 `;
-      output += " ".repeat(this.token.start - 1) + "^";
+      output += " ".repeat(this.token.start) + "^";
     }
     return output;
   }
@@ -269,10 +269,10 @@ var ErrorContext = class {
     throw new Error(new Info(void 0, msg).toString());
   }
   error(token, msg) {
-    this.infos.push(new Info(token, msg));
+    this.errors.push(new Info(token, msg));
   }
   error_msg(msg) {
-    this.infos.push(new Info(void 0, msg));
+    this.errors.push(new Info(void 0, msg));
   }
   warn(token, msg) {
     this.warnings.push(new Info(token, msg, "Warning" /* Warning */));
@@ -281,30 +281,30 @@ var ErrorContext = class {
     this.warnings.push(new Info(void 0, msg, "Warning" /* Warning */));
   }
   info(token, msg) {
-    this.errors.push(new Info(token, msg, "Info" /* Info */));
+    this.infos.push(new Info(token, msg, "Info" /* Info */));
   }
   info_msg(msg) {
-    this.errors.push(new Info(void 0, msg, "Info" /* Info */));
+    this.infos.push(new Info(void 0, msg, "Info" /* Info */));
   }
   toString() {
     let messages = "";
-    if (this.errors) {
+    if (this.errors.length > 0) {
       messages += "[ERRORS]:\n";
     }
     for (const error of this.errors) {
-      messages += error.toString();
+      messages += error.toString() + "\n";
     }
-    if (this.warnings) {
+    if (this.warnings.length > 0) {
       messages += "[WARNINGS]:\n";
     }
     for (const error of this.warnings) {
-      messages += error.toString();
+      messages += error.toString() + "\n";
     }
-    if (this.warnings) {
+    if (this.warnings.length > 0) {
       messages += "[INFO]:\n";
     }
     for (const error of this.infos) {
-      messages += error.toString();
+      messages += error.toString() + "\n";
     }
     return messages;
   }
@@ -315,8 +315,12 @@ var ErrorContext = class {
 
 // src/ast.ts
 var Body = class {
-  constructor(content) {
+  constructor(open, content) {
+    this.open = open;
     this.content = content;
+  }
+  get start() {
+    return this.open;
   }
   toString() {
     return `Body {
@@ -330,6 +334,9 @@ var IfStatement = class {
     this.body = body;
     this.child = child;
   }
+  get start() {
+    return this.condition.start;
+  }
   toString() {
     return `If(
 	${this.condition} 
@@ -342,10 +349,39 @@ var WhileStatement = class {
     this.condition = condition;
     this.body = body;
   }
+  get start() {
+    return this.condition.start;
+  }
   toString() {
     return `While(
 	${this.condition} 
 	${this.body})`;
+  }
+};
+var MacroDeclaration = class {
+  constructor(name, args, body) {
+    this.name = name;
+    this.args = args;
+    this.body = body;
+  }
+  get start() {
+    return this.name.start;
+  }
+  toString() {
+    return `MacroDecl(${this.name} ${this.args.join(", ")};
+${this.body})`;
+  }
+};
+var MacroCall = class {
+  constructor(name, args) {
+    this.name = name;
+    this.args = args;
+  }
+  get start() {
+    return this.name.start;
+  }
+  toString() {
+    return `MacroCall(${this.name} ${this.args.join(", ")}})`;
   }
 };
 var Declaration = class {
@@ -353,6 +389,9 @@ var Declaration = class {
     this.vartype = vartype;
     this.name = name;
     this.expr = expr;
+  }
+  get start() {
+    return this.vartype.start;
   }
   toString() {
     return `Declaration(${this.vartype} ${this.name} = ${this.expr})`;
@@ -363,6 +402,9 @@ var Assignment = class {
     this.name = name;
     this.expr = expr;
   }
+  get start() {
+    return this.name.start;
+  }
   toString() {
     return `Assignment(${this.name} = ${this.expr})`;
   }
@@ -372,6 +414,9 @@ var VarType = class {
     this.type = type;
     this.token = token;
   }
+  get start() {
+    return this.token;
+  }
   toString() {
     return `VarType(${this.type} ${this.token})`;
   }
@@ -380,6 +425,9 @@ var Number = class {
   constructor(token) {
     this.token = token;
   }
+  get start() {
+    return this.token;
+  }
   toString() {
     return `Number(${this.token})`;
   }
@@ -387,6 +435,9 @@ var Number = class {
 var Identifier = class {
   constructor(token) {
     this.token = token;
+  }
+  get start() {
+    return this.token;
   }
   toString() {
     return `Identifier(${this.token})`;
@@ -398,13 +449,20 @@ var BinaryOp = class {
     this.op = op;
     this.expr2 = expr2;
   }
+  get start() {
+    return this.expr1.start;
+  }
   toString() {
     return `BinOp(${this.expr1} ${this.op} ${this.expr2})`;
   }
 };
 var ArrayLiteral = class {
-  constructor(items) {
+  constructor(open, items) {
+    this.open = open;
     this.items = items;
+  }
+  get start() {
+    return this.open;
   }
   toString() {
     return `ArrayLit(${this.items.join(", ")})`;
@@ -414,6 +472,9 @@ var ArrayAccess = class {
   constructor(array, index) {
     this.array = array;
     this.index = index;
+  }
+  get start() {
+    return this.array.start;
   }
   toString() {
     return `ArrayAccess(${this.array} ${this.index})`;
@@ -487,7 +548,7 @@ function parseExprL1(parser) {
     case "OPEN_SQUARE" /* OPEN_SQUARE */: {
       const items = [];
       if (parser.buf.next_if("CLOSE_SQUARE" /* CLOSE_SQUARE */)) {
-        return new ArrayLiteral(items);
+        return new ArrayLiteral(current, items);
       }
       items.push(parseExpression(parser));
       while (!parser.buf.current.eq("CLOSE_SQUARE" /* CLOSE_SQUARE */)) {
@@ -495,7 +556,7 @@ function parseExprL1(parser) {
         items.push(parseExpression(parser));
       }
       parser.buf.next();
-      return new ArrayLiteral(items);
+      return new ArrayLiteral(current, items);
     }
     case "OPEN_PARAN" /* OPEN_PARAN */: {
       const expr = parseExpression(parser);
@@ -542,13 +603,14 @@ function parseAssignment(parser) {
 
 // src/parser/bodyparser.ts
 function parseBody(parser) {
+  const open = parser.buf.current;
   parser.buf.expect("OPEN_BRACE" /* OPEN_BRACE */);
   const content = [];
   while (!parser.buf.current.eq("CLOSE_BRACE" /* CLOSE_BRACE */)) {
     content.push(parseStatement(parser));
   }
   parser.buf.next();
-  return new Body(content);
+  return new Body(open, content);
 }
 
 // src/parser/ifparser.ts
@@ -571,7 +633,7 @@ function parseWhileStatement(parser) {
   parser.buf.expect("WHILE" /* WHILE */);
   const condition = parseExpression(parser);
   if (condition instanceof Number || condition instanceof Identifier) {
-    const binop = new BinaryOp(condition, new Token("COND_NE" /* COND_NE */, "!=", condition.token.line, condition.token.lineno, condition.token.start), new Token("NUMBER" /* NUMBER */, "0", condition.token.line, condition.token.lineno, condition.token.start));
+    const binop = new BinaryOp(condition, new Token("COND_NE" /* COND_NE */, "!=", condition.token.line, condition.token.lineno, condition.token.start), new Number(new Token("NUMBER" /* NUMBER */, "0", condition.token.line, condition.token.lineno, condition.token.start)));
   }
   const body = parseBody(parser);
   return new WhileStatement(condition, body);
@@ -612,10 +674,310 @@ var Parser = class {
     return ast_nodes;
   }
 };
+
+// src/typecheck/variable.ts
+var Variable = class {
+  constructor(scope, type) {
+    this.scope = scope;
+    this.type = type;
+  }
+};
+
+// src/typecheck/scope.ts
+var Scopes = class {
+  top = new Scope();
+  put(name, type) {
+    return this.top.put(name, type);
+  }
+  get(name) {
+    return this.top.get(name);
+  }
+  push() {
+    this.top = new Scope(this.top);
+  }
+  pop() {
+    if (this.top.parent === void 0) {
+      return false;
+    }
+    this.top = this.top.parent;
+    return true;
+  }
+};
+var Scope = class {
+  constructor(parent) {
+    this.parent = parent;
+  }
+  variables = {};
+  put(name, type) {
+    if (this.get(name)) {
+      return void 0;
+    }
+    const variable = new Variable(this, type);
+    this.variables[name] = variable;
+  }
+  get(name) {
+    return this.variables[name] ?? this.parent?.get(name);
+  }
+};
+
+// src/typecheck/exprchecker.ts
+function checkExpr(checker, node) {
+  if (node instanceof BinaryOp) {
+    checkBinaryOp(checker, node);
+  } else if (node instanceof Number) {
+    return Prim.UINT;
+  } else if (node instanceof Identifier) {
+    const variable = checker.scopes.get(node.token.value);
+    console.log(checker.scopes);
+    if (!variable) {
+      checker.err.error(node.token, `Variable is undefined`);
+      return void 0;
+    }
+    return variable.type;
+  } else if (node instanceof ArrayLiteral) {
+    if (node.items.length == 0) {
+      checker.err.error(node.start, "Empty array");
+      return;
+    }
+    const type = checkExpr(checker, node.items[0]);
+    for (let i = 1; i < node.items.length; i++) {
+      const other = checkExpr(checker, node.items[i]);
+      if (type && other !== type) {
+        checker.err.error(node.items[i].start, "Types should match within an array");
+      }
+    }
+    if (!type) {
+      return;
+    }
+    return new ArrayType(type);
+  } else if (node instanceof ArrayAccess) {
+    const array = checkExpr(checker, node.array);
+    if (!(array instanceof ArrayType)) {
+      checker.err.error(node.array.start, "Value is not indexable");
+    }
+    const index = checkExpr(checker, node.index);
+    if (index === Prim.UINT) {
+      checker.err.error(node.index.start, "Index should be a uint");
+    }
+    if (array instanceof ArrayType) {
+      return array.iner;
+    }
+  }
+}
+function checkBinaryOp(checker, node) {
+  const left = checkExpr(checker, node.expr1);
+  const right = checkExpr(checker, node.expr2);
+  if (left === void 0 || right === void 0) {
+    return;
+  }
+  if (left !== right) {
+    checker.err.error(node.op, "Type of left and right-hand side do not match");
+    return;
+  }
+  switch (node.op.kind) {
+    case "COND_E" /* COND_E */:
+    case "COND_NE" /* COND_NE */:
+    case "COND_GE" /* COND_GE */:
+    case "COND_G" /* COND_G */:
+    case "COND_LE" /* COND_LE */:
+    case "COND_L" /* COND_L */:
+      return Prim.Bool;
+    default:
+      return left;
+  }
+}
+
+// src/typecheck/typechecker.ts
+var TypeChecker = class {
+  constructor(err) {
+    this.err = err;
+  }
+  types = /* @__PURE__ */ new Map();
+  scopes = new Scopes();
+  popScope() {
+    if (!this.scopes.pop()) {
+      this.err.throw_msg("Poped last scope");
+    }
+  }
+  check(tree) {
+    for (const node of tree) {
+      checkStatement(this, node);
+    }
+  }
+};
+function checkStatement(checker, node) {
+  if (node instanceof Body) {
+    checkBody(checker, node);
+  } else if (node instanceof IfStatement) {
+    checkIf(checker, node);
+  } else if (node instanceof WhileStatement) {
+    checkWhile(checker, node);
+  } else if (node instanceof Assignment) {
+    checkAssignment(checker, node);
+  } else if (node instanceof Declaration) {
+    checkDeclaration(checker, node);
+  } else if (node instanceof MacroDeclaration) {
+    checkMacroDeclaration(checker, node);
+  } else if (node instanceof MacroCall) {
+    checkMacroCall(checker, node);
+  }
+}
+function checkBody(checker, tree) {
+  checker.scopes.push();
+  for (const statement of tree.content) {
+    checkStatement(checker, statement);
+  }
+  checker.popScope();
+}
+function checkIf(checker, tree) {
+  checkExpr(checker, tree.condition);
+  checkBody(checker, tree.body);
+  if (tree.child) {
+    checkStatement(checker, tree.child);
+  }
+}
+function checkWhile(checker, tree) {
+  checkExpr(checker, tree.condition);
+  checkStatement(checker, tree.body);
+}
+function checkAssignment(checker, tree) {
+  checkExpr(checker, tree.expr);
+}
+function checkDeclaration(checker, tree) {
+  checker.scopes.put(tree.name.token.value, Prim.UINT);
+  if (tree.expr) {
+    checkExpr(checker, tree.expr);
+  }
+}
+function checkMacroDeclaration(checker, tree) {
+}
+function checkMacroCall(checker, tree) {
+}
+
+// src/codegen.ts
+var Asm = class {
+  instrs;
+  constructor() {
+    this.instrs = [];
+  }
+  toString() {
+    return this.instrs.join("\n");
+  }
+  putLI(dest, value) {
+    this.instrs.push("IMM R" + dest + " " + value);
+  }
+  putLOAD(reg, addr) {
+    this.instrs.push("LOAD R" + reg + " $" + addr);
+  }
+  putSTORE(addr, reg) {
+    this.instrs.push("STORE $" + addr + " R" + reg);
+  }
+  putADD(dest, srcA, srcB) {
+    this.instrs.push("ADD R" + dest + " R" + srcA + " R" + srcB);
+  }
+};
+var CodeGeneration = class {
+  asm;
+  allocator;
+  constructor(maxRegisters) {
+    this.asm = new Asm();
+    this.allocator = new Allocator(maxRegisters);
+  }
+  gen(astNodes) {
+    for (const astNode of astNodes) {
+      this.genStatement(astNode);
+    }
+    return this.asm;
+  }
+  genStatement(statement) {
+    if (statement instanceof Declaration) {
+      this.genDeclaration(statement);
+    } else if (statement instanceof Assignment) {
+    } else if (statement instanceof IfStatement) {
+    } else if (statement instanceof WhileStatement) {
+    } else {
+      return;
+    }
+  }
+  genDeclaration(dec) {
+    const varType = dec.vartype;
+    const varName = dec.name.token.value;
+    const addr = this.allocator.addVariable(varName);
+    if (dec.expr) {
+      const reg = this.genExpression(dec.expr);
+      this.asm.putSTORE(addr, reg);
+      this.allocator.setFreeRegister(reg);
+    }
+  }
+  genExpression(expr) {
+    if (expr instanceof Number) {
+      const reg = this.allocator.getFreeRegister();
+      this.asm.putLI(reg, parseInt(expr.token.value, 10));
+      return reg;
+    } else if (expr instanceof Identifier) {
+      const memAddr = this.allocator.addVariable(expr.token.value);
+      const reg = this.allocator.getFreeRegister();
+      this.asm.putLOAD(reg, memAddr);
+      return reg;
+    } else if (expr instanceof BinaryOp) {
+      const reg1 = this.genExpression(expr.expr1);
+      const reg2 = this.genExpression(expr.expr2);
+      switch (expr.op.value) {
+        case "+": {
+          this.asm.putADD(reg1, reg1, reg2);
+          break;
+        }
+      }
+      this.allocator.setFreeRegister(reg2);
+      return reg1;
+    } else {
+      return -1;
+    }
+  }
+};
+var Allocator = class {
+  varToMemory;
+  memory;
+  registers;
+  constructor(maxRegisters) {
+    this.varToMemory = {};
+    this.registers = new Array(maxRegisters);
+    this.registers.fill(false);
+    this.memory = new Array(512);
+    this.memory.fill(false);
+  }
+  addVariable(varName) {
+    if (varName in this.varToMemory) {
+      return this.varToMemory[varName];
+    }
+    const addr = this.getFreeMemory();
+    this.varToMemory[varName] = addr;
+    return addr;
+  }
+  getFreeRegister() {
+    const addr = this.registers.indexOf(false);
+    this.registers[addr] = true;
+    return addr;
+  }
+  getFreeMemory() {
+    const addr = this.memory.indexOf(false);
+    this.memory[addr] = true;
+    return addr;
+  }
+  setFreeRegister(reg) {
+    this.registers[reg] = false;
+  }
+  setFreeMemory(mem) {
+    this.memory[mem] = false;
+  }
+};
 export {
+  Asm,
+  CodeGeneration,
   Kind,
   Parser,
   Token,
+  TypeChecker,
   lex
 };
 //# sourceMappingURL=compiler.js.map

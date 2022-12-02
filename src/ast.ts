@@ -26,7 +26,7 @@ export class Body implements IStatement {
 
 export class IfStatement implements IStatement {
     constructor(
-        public condition: IExpression,
+        public condition: Expression,
         public body: Body,
         public child: Body | IfStatement | undefined
     ) {
@@ -41,7 +41,7 @@ export class IfStatement implements IStatement {
   }
 
 export class WhileStatement implements IStatement {
-    constructor(public condition: IExpression, public body: Body) {}
+    constructor(public condition: Expression, public body: Body) {}
 
     get start(): Token {
         return this.condition.start;
@@ -97,7 +97,7 @@ export class Declaration implements IStatement {
 }
 
 export class Assignment implements IStatement {
-    constructor(public name: Identifier, public expr: IExpression) {}
+    constructor(public name: Identifier, public expr: Expression) {}
 
     get start(): Token {
         return this.name.start;
@@ -166,7 +166,7 @@ export class BinaryOp implements IExpression {
 }
 
 export class ArrayLiteral implements IExpression {
-    constructor(private open: Token, public items: IExpression[]) {}
+    constructor(private open: Token, public items: Expression[]) {}
 
     get start(): Token {
         return this.open;
@@ -178,7 +178,7 @@ export class ArrayLiteral implements IExpression {
   }
   
 export class ArrayAccess implements IExpression {
-    constructor(public array: Identifier, public index: IExpression) {}
+    constructor(public array: Identifier, public index: Expression) {}
 
     get start(): Token {
         return this.array.start;

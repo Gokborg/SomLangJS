@@ -9,14 +9,16 @@
     body, textarea {
       background-color: black;
       color: white;
+      font-family: monospace;
     }
   </style>
   <script type="module">
-    import {lex, Parser } from "./target/compiler.js";
+    import {lex, Parser, TypeChecker, CodeGeneration } from "./target/compiler.js";
     const code = document.getElementsByTagName("textarea")[0];
     const errorOutput = document.getElementsByTagName("output")[0];
     const lexOutput = document.getElementsByTagName("output")[1];
     const parseOutput = document.getElementsByTagName("output")[2];
+    const codegenOutput = document.getElementsByTagName("output")[3];
 
     code.oninput = e => {
       errorOutput.value = "";
@@ -30,13 +32,25 @@
         }
         lexOutput.value = lexString;
         
-        const parseResults = new Parser().parse(results);
+        const parser = new Parser();
+        const parseResults = parser.parse(results);
         let parseString = "";
         for (const r of parseResults) {
           console.log(r);
           parseString += r.toString() + "\n"; // JSON.stringify(r, null, 2) + "\n";
         } 
         parseOutput.value = parseString;
+
+        const checkResults = new TypeChecker(parser.err).check(parseResults);
+
+        // TODO: skip codegen on error
+        const codegen = new CodeGeneration(7);
+        const asm = codegen.gen(parseResults);
+        codegenOutput.value = asm.toString();
+
+        console.log(parser.err);
+        errorOutput.value = parser.err.toString();
+
       } catch (e) {
         errorOutput.value = "[ERROR]:\n" + e.message;
       }
@@ -46,6 +60,7 @@
 </head>
 <body>
   <textarea id="code" cols="80" rows="20">uint a = 10;
+uint n = a;
 if a > 10 {
   a = 20;
 } else {
@@ -54,7 +69,7 @@ if a > 10 {
 
 uint b = [1, 2, 3];
   </textarea><br>
-  <output id="error" style="white-space: pre-wrap; width: 100%;"></output>
+  <output id="error" style="white-space: pre; width: 100%;"></output>
   <div style="display: flex;">
     <div style="width: 100%;">
       <h2>Lexer</h2>
@@ -63,6 +78,10 @@ uint b = [1, 2, 3];
     <div style="width: 100%;">
       <h2>Parser</h2>
       <output id="parser" style="white-space: pre-wrap; width: 100%;"></output>
+    </div>
+    <div style="width: 100%;">
+      <h2>URCL <button onclick="navigator.clipboard.writeText(document.querySelector('#URCL').value);">Copy</button></h2>
+      <output id="URCL" style="white-space: pre-wrap; width: 100%;"></output>
     </div>
   </div>
 </body>

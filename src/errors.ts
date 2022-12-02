@@ -21,7 +21,7 @@ class Info {
     output += `${this.level}: ${this.msg}\n`;
     if (this.token) {
       output += `${this.token.line}\n`;
-      output += ' '.repeat(this.token.start-1) + '^';
+      output += ' '.repeat(this.token.start) + '^';
     }
 
     return output;
@@ -47,10 +47,10 @@ export class ErrorContext {
   }
 
   error(token: Token, msg: string) {
-    this.infos.push(new Info(token, msg))
+    this.errors.push(new Info(token, msg))
   }
   error_msg(msg: string) {
-    this.infos.push(new Info(undefined, msg))
+    this.errors.push(new Info(undefined, msg))
   }
   warn(token: Token, msg: string) {
     this.warnings.push(new Info(token, msg, ErrorLevel.Warning))
@@ -59,32 +59,32 @@ export class ErrorContext {
     this.warnings.push(new Info(undefined, msg, ErrorLevel.Warning))
   }
   info(token: Token, msg: string) {
-    this.errors.push(new Info(token, msg, ErrorLevel.Info))
+    this.infos.push(new Info(token, msg, ErrorLevel.Info))
   }
   info_msg(msg: string) {
-    this.errors.push(new Info(undefined, msg, ErrorLevel.Info))
+    this.infos.push(new Info(undefined, msg, ErrorLevel.Info))
   }
   toString() {
     let messages = "";
-    if (this.errors) {
+    if (this.errors.length > 0) {
       messages += "[ERRORS]:\n"
     }
     for (const error of this.errors) {
-      messages += error.toString();
+      messages += error.toString() + "\n";
     }
 
-    if (this.warnings) {
+    if (this.warnings.length > 0) {
       messages += "[WARNINGS]:\n"
     }
     for (const error of this.warnings) {
-      messages += error.toString();
+      messages += error.toString() + "\n";
     }
 
-    if (this.warnings) {
+    if (this.warnings.length > 0) {
       messages += "[INFO]:\n"
     }
     for (const error of this.infos) {
-      messages += error.toString();
+      messages += error.toString() + "\n";
     }
 
     return messages
