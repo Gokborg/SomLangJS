@@ -4,12 +4,19 @@ const enum ErrorLevel {
   Info = "Info", Warning = "Warning", Error = "Error"
 }
 
+const debug = true;
+
 class Info {
+  error?: Error;
   constructor(
     public token: undefined | Token,
     public msg: string,
     public level = ErrorLevel.Error
-  ) {}
+  ) {
+    if (debug) {
+      this.error = new Error();
+    }
+  }
   static msg(msg: string) {
     return new Info(undefined, msg);
   }
@@ -22,6 +29,11 @@ class Info {
     if (this.token) {
       output += `${this.token.line}\n`;
       output += ' '.repeat(this.token.start) + '^';
+    }
+
+    if (this.error) {
+      console.error(this.error);
+      output += "\n" + this.error.stack;
     }
 
     return output;

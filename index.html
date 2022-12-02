@@ -5,83 +5,66 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Test</title>
+  <link rel="stylesheet" href="web/editor/editor.css">
   <style>
-    body, textarea {
+    html, body {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        margin: 0px;
+        padding: 0px;
+    }
+    html, body, textarea {
       background-color: black;
       color: white;
       font-family: monospace;
+      font-size: 1rem;
+    }
+    .hidden {
+        display: none;
+    }
+    .error {
+        border: 0.25rem solid red;
+    }
+    .collumns {
+      display: flex;
+      gap: 1rem;
+    }
+    .collumns > * {
+      width: 100%;
     }
   </style>
-  <script type="module">
-    import {lex, Parser, TypeChecker, CodeGeneration } from "./target/compiler.js";
-    const code = document.getElementsByTagName("textarea")[0];
-    const errorOutput = document.getElementsByTagName("output")[0];
-    const lexOutput = document.getElementsByTagName("output")[1];
-    const parseOutput = document.getElementsByTagName("output")[2];
-    const codegenOutput = document.getElementsByTagName("output")[3];
-
-    code.oninput = e => {
-      errorOutput.value = "";
-      lexOutput.value = "";
-      parseOutput.value = "";
-      try {
-        const results = lex(code.value.split("\n"));
-        let lexString = "";
-        for (const r of results) {
-          lexString += r + "\n";
-        }
-        lexOutput.value = lexString;
-        
-        const parser = new Parser();
-        const parseResults = parser.parse(results);
-        let parseString = "";
-        for (const r of parseResults) {
-          console.log(r);
-          parseString += r.toString() + "\n"; // JSON.stringify(r, null, 2) + "\n";
-        } 
-        parseOutput.value = parseString;
-
-        const checkResults = new TypeChecker(parser.err).check(parseResults);
-
-        // TODO: skip codegen on error
-        const codegen = new CodeGeneration(7);
-        const asm = codegen.gen(parseResults);
-        codegenOutput.value = asm.toString();
-
-        console.log(parser.err);
-        errorOutput.value = parser.err.toString();
-
-      } catch (e) {
-        errorOutput.value = "[ERROR]:\n" + e.message;
-      }
-    };
-    code.oninput();
-  </script>
+  <script type="module" src="./target/index.js"></script>
 </head>
 <body>
-  <textarea id="code" cols="80" rows="20">uint a = 10;
-uint n = a;
-if a > 10 {
-  a = 20;
-} else {
-  a = 40;
-}
-
-uint b = [1, 2, 3];
-  </textarea><br>
-  <output id="error" style="white-space: pre; width: 100%;"></output>
-  <div style="display: flex;">
-    <div style="width: 100%;">
-      <h2>Lexer</h2>
-      <output id="lexer" style="white-space: pre-wrap; width: 100%;"></output>
+  <div class="collumns">
+    <div>
+      <editor-window id="code" style="width: 100%; height: 100vh; resize: none; margin-top: 20px;"></editor-window>
     </div>
-    <div style="width: 100%;">
-      <h2>Parser</h2>
-      <output id="parser" style="white-space: pre-wrap; width: 100%;"></output>
-    </div>
-    <div style="width: 100%;">
-      <h2>URCL <button onclick="navigator.clipboard.writeText(document.querySelector('#URCL').value);">Copy</button></h2>
-      <output id="URCL" style="white-space: pre-wrap; width: 100%;"></output>
+    <div>
+        <div id="outputs" style="width: 100%; overflow-y: auto; max-height: 100%;">
+            <nav style="display: flex; justify-items: center; width: 100%;">
+                <button>Lexer</button>
+                <button>Parser</button>
+                <button>URCL</button>
+                <button id="error-button">Errors</button>
+            </nav>
+        <div style="width: 100%;">
+            <h2>Lexer</h2>
+            <output id="lexer" style="white-space: pre-wrap; width: 100%;"></output>
+        </div>
+        <div style="width: 100%;">
+            <h2>Parser</h2>
+            <output id="parser" style="white-space: pre-wrap; width: 100%;"></output>
+        </div>
+        <div style="width: 100%;">
+            <h2>URCL <button onclick="navigator.clipboard.writeText(document.querySelector('#urcl').value);">Copy</button></h2>
+            <output id="urcl" style="white-space: pre-wrap; width: 100%;"></output>
+        </div>
+        <div style="width: 100%;">
+            <output id="error" style="white-space: pre-wrap; width: 100%;"></output>
+        </div>
+        </div>
     </div>
   </div>
 </body>

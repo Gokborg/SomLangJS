@@ -26,17 +26,22 @@ export class Pointer implements IType {
 }
 
 export class Prim implements IType {
-  constructor(private name: string) {
+  private constructor(private name: string) {
 
   }
   eq(other: Type): boolean {
     return this === other;
   }
+  static ERROR = new Prim("UINT");
   static UINT = new Prim("UINT");
-  static Char = new Prim("CHAR");
-  static Bool = new Prim("BOOL");
+  static CHAR = new Prim("CHAR");
+  static BOOL = new Prim("BOOL");
 
   toString(): string {
     return this.name;
   }
 }
+
+
+export const NoType = Prim.ERROR;
+export type NoType = typeof NoType;

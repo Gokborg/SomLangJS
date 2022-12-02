@@ -50,6 +50,7 @@ const symbols : Record<string, Kind> = {
     '/': Kind.DIV,
     '[': Kind.OPEN_SQUARE,
     ']': Kind.CLOSE_SQUARE,
+    ' ': Kind.WHITESPACE,
 }
 
 const double_symbols: Record<string, Kind> = {
@@ -98,6 +99,7 @@ export function lex(lines: string[], file_name = "<eval>") : Token[]{
             }
             else {
                 if (buf.current in symbols) {
+                    const start: number = buf.pos;
                     let current: string = buf.current;
                     let symbol_kind: Kind = symbols[current];
                     buf.next();
@@ -110,9 +112,12 @@ export function lex(lines: string[], file_name = "<eval>") : Token[]{
 
                     if (symbol_kind === Kind.COMMENT) {
                         buf.done = true;
+                        tokens.push(
+                            new Token(symbol_kind, line.substring(start), line, lineno, start)
+                        );
                     } else {
                         tokens.push(
-                            new Token(symbol_kind, current, line, lineno, buf.pos)
+                            new Token(symbol_kind, current, line, lineno, start)
                         );
                     }
                 }

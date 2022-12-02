@@ -28,6 +28,8 @@ export const enum Kind {
   COND_GE = "COND_GE",
   COMMA = "COMMA",
 
+  WHITESPACE = "WHITESPACE",
+
   OPEN_PARAN = "OPEN_PARAN",
   CLOSE_PARAN = "CLOSE_PARAN",
 

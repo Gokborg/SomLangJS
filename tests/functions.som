@@ -13,7 +13,7 @@ macro add3 (x, y, z) {
   x = x + y + z;
 }
 
-uint x = 10;
-add1!(x);
-add2!(x, 2);
-add3!(x, 2, 3);
+
+
+
+

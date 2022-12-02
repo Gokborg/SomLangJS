@@ -1,11 +1,11 @@
 import * as ast from "./ast.ts";
-import {Token} from "./token.ts";
+import {Kind, Token} from "./token.ts";
 import {TokenBuffer} from "./tokenbuffer.ts";
 import { ErrorContext } from "./errors.ts";
 
 import { parseStatement } from "./parser/stmtparser.ts";
 export class Parser {
-    err: ErrorContext;
+    err: ErrorContext; 
     buf: TokenBuffer;
 
     constructor() {
@@ -14,6 +14,9 @@ export class Parser {
     }
 
     parse(tokens: Token[]) : ast.Statement[] {
+        tokens = tokens.filter(token => 
+            token.kind !== Kind.WHITESPACE && token.kind !== Kind.COMMENT
+        );
         const ast_nodes: ast.Statement[] = [];
         this.buf.set(tokens);
         while(!this.buf.done) {

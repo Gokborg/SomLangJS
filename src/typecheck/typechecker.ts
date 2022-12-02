@@ -1,8 +1,8 @@
 import { ErrorContext } from "../errors.ts";
 import * as ast from "../ast.ts";
-import { Prim, Type } from "../type.ts";
+import { NoType, Prim, Type } from "../type.ts";
 import { Scopes } from "./scope.ts";
-import { checkExpr } from "./exprchecker.ts";
+import { checkCondition, checkExpr } from "./exprchecker.ts";
 
 export class TypeChecker {
     constructor(public err: ErrorContext) {}
@@ -21,6 +21,29 @@ export class TypeChecker {
             checkStatement(this, node);
         }
     }
+    type(tree: ast.AstNode) {
+        return this.types.get(tree);
+    }
+
+    set(tree: ast.AstNode, type: Type): Type {
+        this.types.set(tree, type);
+        return type;
+    }
+    expect(tree: ast.AstNode, ...types: Type[]): Type {
+        const type = this.type(tree);
+        if (type === undefined) {
+            console.log("no type", tree);
+            this.err.warn(tree.start, `Missing type on node ${tree}`);
+            return this.set(tree, NoType);
+        }
+        for (const expect of types) {
+            if (type.eq(expect)) {
+                return type;
+            }
+        }
+        return this.set(tree, NoType);
+
+    } 
 }
 
 function checkStatement(checker: TypeChecker, node: ast.Statement) {
@@ -49,16 +72,16 @@ function checkBody(checker: TypeChecker, tree: ast.Body) {
     }
     checker.popScope();
 }
-// TODO: check these
+
 function checkIf(checker: TypeChecker, tree: ast.IfStatement) {
-    checkExpr(checker, tree.condition);
+    checkCondition(checker, tree.condition);
     checkBody(checker, tree.body);
     if (tree.child) {
         checkStatement(checker, tree.child);
     }
 }
 function checkWhile(checker: TypeChecker, tree: ast.WhileStatement) {
-    checkExpr(checker, tree.condition);
+    checkCondition(checker, tree.condition);
     checkStatement(checker, tree.body);
 }
 

@@ -2,7 +2,7 @@ import * as ast from "./ast.ts";
 
 export class Asm {
     instrs: string[];
-    constructor() {
+    constructor(readonly source: ast.AstNode) {
         this.instrs = [];
     }
     toString() {
@@ -38,7 +38,6 @@ export class Asm {
     putJMP(label: string) {
         this.instrs.push("JMP " + label);
     }
-
 }
 
 export class CodeGeneration {
@@ -52,15 +51,15 @@ export class CodeGeneration {
         this.label = 0;
     }
 
-    gen(astNodes: ast.Statement[]) {
+    gen(astNodes: ast.Statement[]) : Asm[]{
         for(const astNode of astNodes) {
             this.genStatement(astNode);
         }
-        console.log(this.asmList);
+        return this.asmList;
     }
 
     genStatement(statement: ast.Statement) {
-        const asm: Asm = new Asm();
+        const asm: Asm = new Asm(statement);
         if(statement instanceof ast.Declaration) {
             this.genDeclaration(asm, statement);
             this.asmList.push(asm);
@@ -74,6 +73,7 @@ export class CodeGeneration {
         }
         else if(statement instanceof ast.WhileStatement) {
             this.genWhileStatement(asm, statement);
+            this.asmList.push(asm);
         }
         else {
             //error - No code gen for this statement
@@ -90,8 +90,10 @@ export class CodeGeneration {
     genWhileStatement(asm: Asm, whileStatement: ast.WhileStatement) {
         const endLabel: string = this.genLabel();
         const startLabel: string = this.genLabel();
-        asm.putLABEL(startLabel);
-        this.genCondition(whileStatement.condition, endLabel);
+        const startAsm: Asm = new Asm(whileStatement.condition);
+        startAsm.putLABEL(startLabel);
+        this.genCondition(startAsm, whileStatement.condition, endLabel);
+        this.asmList.push(startAsm);
         this.genBody(whileStatement.body);
         asm.putJMP(startLabel);
         asm.putLABEL(endLabel);
@@ -105,9 +107,11 @@ export class CodeGeneration {
         if(ifStatement.child === undefined && endLabel != undefined) {
             label = endLabel;
         }
-        this.asmList.push(this.genCondition(ifStatement.condition, label));
+        const condAsm: Asm = new Asm(ifStatement.condition);
+        this.genCondition(condAsm, ifStatement.condition, label)
+        this.asmList.push(condAsm);
         this.genBody(ifStatement.body);
-        const asm: Asm = new Asm();
+        const asm: Asm = new Asm(ifStatement);
         if(ifStatement.child != undefined && endLabel != undefined) {
             asm.putJMP(endLabel);
         }
@@ -119,7 +123,7 @@ export class CodeGeneration {
         }
         else if(ifStatement.child instanceof ast.Body) {
             this.genBody(ifStatement.child);
-            const elseAsm: Asm = new Asm();
+            const elseAsm: Asm = new Asm(ifStatement.child);
             if(endLabel != undefined) {
                 elseAsm.putLABEL(endLabel);
                 this.asmList.push(elseAsm);
@@ -130,8 +134,7 @@ export class CodeGeneration {
         }
     }
 
-    genCondition(condition: ast.Expression, endLabel: string) : Asm{
-        const asm: Asm = new Asm();
+    genCondition(asm: Asm, condition: ast.Expression, endLabel: string) {
         if(!(condition instanceof ast.BinaryOp)) {
             //generate an error here probably
             return asm;
