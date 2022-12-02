@@ -5,11 +5,9 @@ export class Asm {
     constructor() {
         this.instrs = [];
     }
-
     toString() {
         return this.instrs.join("\n");
     }
-
     putLI(dest: number, value: number) {
         this.instrs.push("IMM R" + dest + " " + value);
     }
@@ -31,14 +29,27 @@ export class Asm {
     putDIV(dest: number, srcA: number, srcB: number) {
         this.instrs.push("DIV R" + dest + " R" + srcA + " R" + srcB);
     }
+    putBRANCH(instr: string, label: string, left: number, right: number) {
+        this.instrs.push(instr + " " + label + " " + left + " " + right);
+    }
+    putLABEL(label: string) {
+        this.instrs.push(label);
+    }
+    putJMP(label: string) {
+        this.instrs.push("JMP " + label);
+    }
+
 }
 
 export class CodeGeneration {
-    asm: Asm
+    asm: Asm;
     allocator: Allocator;
+    label: number;
+
     constructor(maxRegisters: number) {
         this.asm = new Asm();
         this.allocator = new Allocator(maxRegisters);
+        this.label = 0;
     }
 
     gen(astNodes: ast.Statement[]) : Asm {
@@ -56,7 +67,7 @@ export class CodeGeneration {
             this.genAssignment(statement);
         }
         else if(statement instanceof ast.IfStatement) {
-
+            this.genIfStatement(statement, undefined, undefined);
         }
         else if(statement instanceof ast.WhileStatement) {
 
@@ -65,6 +76,91 @@ export class CodeGeneration {
             //No code gen for this statement
             return;
         }
+    }
+
+    genBody(body: ast.Body) {
+        for(const statement of body.content) {
+            this.genStatement(statement);
+        }
+    }
+
+    genWhileStatement(whileStatement: ast.WhileStatement) {
+        const endLabel: string = this.genLabel();
+        const startLabel: string = this.genLabel();
+        this.asm.putLABEL(startLabel);
+        this.genCondition(whileStatement.condition, endLabel);
+        this.genBody(whileStatement.body);
+        this.asm.putJMP(startLabel);
+        this.asm.putLABEL(endLabel);
+    }
+
+    genIfStatement(ifStatement: ast.IfStatement, label: undefined | string, endLabel: undefined | string) {
+        if(label == undefined) {
+            label = this.genLabel();
+        }
+        else if(endLabel == undefined && ifStatement.child != undefined) {
+            endLabel = this.genLabel();
+        }
+        this.genCondition(ifStatement.condition, label);
+        this.genBody(ifStatement.body);
+        if(endLabel != undefined) {
+            this.asm.putJMP(endLabel);
+        }
+        this.asm.putLABEL(label);
+        if(ifStatement.child instanceof ast.Body) {
+            for(const statement of ifStatement.child.content) {
+                this.genStatement(statement);
+            }
+            if(endLabel != undefined) {
+                this.asm.putLABEL(endLabel);
+            }
+            else {
+                //Generate error 
+            }
+        }
+        else if(ifStatement.child instanceof ast.IfStatement) {
+            this.genIfStatement(ifStatement.child, undefined, endLabel);
+        }
+    }
+
+    genCondition(condition: ast.Expression, endLabel: string) {
+        if(!(condition instanceof ast.BinaryOp)) {
+            //generate an error here probably
+            return;
+        }
+        const reg1: number = this.genExpression(condition.expr1);
+        const reg2: number = this.genExpression(condition.expr2);
+        const op: string = condition.op.value
+        switch(op) {
+            case ">": {
+                this.asm.putBRANCH("BLE", endLabel, reg1, reg2); break;
+            }
+            case ">=": {
+                this.asm.putBRANCH("BRL", endLabel, reg1, reg2); break;
+            }
+            case "<": {
+                this.asm.putBRANCH("BGE", endLabel, reg1, reg2); break;
+            }
+            case "<=": {
+                this.asm.putBRANCH("BRG", endLabel, reg1, reg2); break;
+            }
+            case "==": {
+                this.asm.putBRANCH("BNE", endLabel, reg1, reg2); break;
+            }
+            case "!=": {
+                this.asm.putBRANCH("BRE", endLabel, reg1, reg2); break;
+            }
+            default: {
+                //Generate error here, invalid condition op
+            }
+        }
+        this.allocator.setFreeRegister(reg1);
+        this.allocator.setFreeRegister(reg2);
+    }
+
+    genLabel() : string{
+        this.label++;
+        return ".LABEL_" + this.label;
     }
 
     genDeclaration(dec: ast.Declaration) {
