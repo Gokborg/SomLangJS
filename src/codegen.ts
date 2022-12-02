@@ -12,10 +12,10 @@ export class Asm {
         this.instrs.push("IMM R" + dest + " " + value);
     }
     putLOAD(reg: number, addr: number) {
-        this.instrs.push("LOAD R" + reg + " $" + addr);
+        this.instrs.push("LOD R" + reg + " #" + addr);
     }
     putSTORE(addr: number, reg: number) {
-        this.instrs.push("STORE $" + addr + " R" + reg);
+        this.instrs.push("STR #" + addr + " R" + reg);
     }
     putADD(dest: number, srcA: number, srcB: number) {
         this.instrs.push("ADD R" + dest + " R" + srcA + " R" + srcB);

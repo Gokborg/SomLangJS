@@ -888,10 +888,10 @@ class Asm {
         this.instrs.push("IMM R" + dest + " " + value);
     }
     putLOAD(reg, addr) {
-        this.instrs.push("LOAD R" + reg + " $" + addr);
+        this.instrs.push("LOD R" + reg + " #" + addr);
     }
     putSTORE(addr, reg) {
-        this.instrs.push("STORE $" + addr + " R" + reg);
+        this.instrs.push("STR #" + addr + " R" + reg);
     }
     putADD(dest, srcA, srcB) {
         this.instrs.push("ADD R" + dest + " R" + srcA + " R" + srcB);
