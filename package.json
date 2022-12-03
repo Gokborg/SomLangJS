@@ -1,0 +1,26 @@
+{
+  "name": "somlangjs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "bundle": "esbuild web/index.ts --outdir=target --bundle --format=esm --sourcemap"
+  },
+  "dependencies": {
+    "esbuild": "^0.15.16"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gokborg/SomLangJS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gokborg/SomLangJS/issues"
+  },
+  "homepage": "https://github.com/Gokborg/SomLangJS#readme"
+}
