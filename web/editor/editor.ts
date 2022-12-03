@@ -112,10 +112,13 @@ export class Editor_Window extends HTMLElement {
         const all_tokens = lex(this.lines);
         // for (let i = 0; )
 
-        console.log(all_tokens);
         let token_i = 0;
 
-        for (let i = start; i < end; i++) {
+        while (token_i < all_tokens.length && all_tokens[token_i].lineno <= start) {
+            token_i++;
+        }
+
+        for (let i = start; i < end && token_i < all_tokens.length; i++) {
             const line = this.lines[i].replaceAll("\r", "");
             if (div === null) {
                 div = document.createElement("div");
@@ -134,7 +137,6 @@ export class Editor_Window extends HTMLElement {
                     if ( token.lineno > i + 1) {
                         break;
                     }
-                    console.log(token.start, start);
                     if (token.start > start - 1) {
                         if (span === null){
                             span = document.createElement("span");

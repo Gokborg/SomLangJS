@@ -15,55 +15,63 @@
         padding: 0px;
     }
     html, body, textarea {
-      background-color: black;
-      color: white;
-      font-family: monospace;
-      font-size: 1rem;
+        background-color: black;
+        color: white;
+        font-family: monospace;
+        font-size: 1rem;
     }
     .hidden {
-        display: none;
+        display: none !important;
     }
     .error {
         border: 0.25rem solid red;
     }
     .collumns {
-      display: flex;
-      gap: 1rem;
+        display: flex;
+        flex: 0 0 50%;
+        
+        gap: 1rem;
+        height: 100%;
     }
     .collumns > * {
-      width: 100%;
+        width: 50%;
+    }
+    #outputs > div {
+        height: 100%; display: flex; flex-direction: column;
+    }
+    #outputs > div > pre {
+        height: 100%;
+        overflow: auto;
     }
   </style>
   <script type="module" src="./target/index.js"></script>
 </head>
 <body>
   <div class="collumns">
-    <div>
-      <editor-window id="code" style="width: 100%; height: 100vh; resize: none; margin-top: 20px;"></editor-window>
+    <div style="display: flex; flex-direction: column;">
+        <editor-window id="code" style="width: 100%; resize: none; margin-top: 20px;"></editor-window>
     </div>
-    <div>
-        <div id="outputs" style="width: 100%; overflow-y: auto; max-height: 100%;">
-            <nav style="display: flex; justify-items: center; width: 100%;">
-                <button>Lexer</button>
-                <button>Parser</button>
-                <button>URCL</button>
-                <button id="error-button">Errors</button>
-            </nav>
-        <div style="width: 100%;">
+    <div id="outputs" style="height: 100%;">
+        <nav style="display: flex; justify-items: center; width: 100%;">
+            <button>Lexer</button>
+            <button>Parser</button>
+            <button>URCL</button>
+            <button id="error-button">Errors</button>
+        </nav>
+        <div>
             <h2>Lexer</h2>
-            <output id="lexer" style="white-space: pre-wrap; width: 100%;"></output>
+            <pre id="lexer"></pre>
         </div>
-        <div style="width: 100%;">
+        <div>
             <h2>Parser</h2>
-            <output id="parser" style="white-space: pre-wrap; width: 100%;"></output>
+            <pre id="parser"></pre>
         </div>
-        <div style="width: 100%;">
+        <div>
             <h2>URCL <button onclick="navigator.clipboard.writeText(document.querySelector('#urcl').value);">Copy</button></h2>
-            <output id="urcl" style="white-space: pre-wrap; width: 100%;"></output>
+            <pre id="urcl"></pre>
         </div>
-        <div style="width: 100%;">
-            <output id="error" style="white-space: pre-wrap; width: 100%;"></output>
-        </div>
+        <div>
+            <pre id="error"></pre>
         </div>
     </div>
   </div>

@@ -4,7 +4,6 @@ import { Parser } from "../src/parser";
 import { TypeChecker } from "../src/typecheck/typechecker";
 import "./editor/editor";
 
-console.log("hello world");
 {
 const output_container = document.getElementById("outputs") as HTMLOutputElement;
 const buttons = output_container.querySelectorAll("nav button") as NodeListOf<HTMLButtonElement>;
@@ -34,9 +33,9 @@ buttons.forEach((button, i) => {
 
     code.oninput = oninput;
     function oninput() {
-        errorOutput.value = "";
-        lexOutput.value = "";
-        parseOutput.value = "";
+        errorOutput.textContent = "";
+        lexOutput.textContent = "";
+        parseOutput.textContent = "";
         error_button.classList.remove("error");
         try {
         const results = lex(code.value.split("\n"));
@@ -44,16 +43,15 @@ buttons.forEach((button, i) => {
         for (const r of results) {
             lexString += r + "\n";
         }
-        lexOutput.value = lexString;
+        lexOutput.textContent = lexString;
         
         const parser = new Parser();
         const parseResults = parser.parse(results);
         let parseString = "";
         for (const r of parseResults) {
-            console.log(r);
             parseString += r.toString() + "\n"; // JSON.stringify(r, null, 2) + "\n";
         } 
-        parseOutput.value = parseString;
+        parseOutput.textContent = parseString;
 
         const checkResults = new TypeChecker(parser.err).check(parseResults);
 
@@ -62,7 +60,6 @@ buttons.forEach((button, i) => {
         const asms = codegen.gen(parseResults);
         let result = "";
         for (const asm of asms) {
-            console.log(asm);
             const token = asm.source.start;
             //result += "// " + token.lineno + "\n";
           let instrsInAsm = asm.instrs;
@@ -71,22 +68,19 @@ buttons.forEach((button, i) => {
           }
           result += "\n";
         }
-        console.log(result);
-        console.log(codegenOutput);
-        codegenOutput.value = result;
+        codegenOutput.textContent = result;
 
-        console.log(parser.err);
         if (parser.err.has_error()) {
-            errorOutput.value = parser.err.toString();
+            errorOutput.textContent = parser.err.toString();
             error_button.classList.add("error");
         }
 
         } catch (e) {
             if (e instanceof Error) {
-                errorOutput.value = "[ERROR]:\n" + e.message;
+                errorOutput.textContent = "[ERROR]:\n" + e.message;
             }
             error_button.classList.add("error");
         }
     };
-    oninput();
+    code.value = "uint a = 10;\n".repeat(100);
 }
