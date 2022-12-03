@@ -136,7 +136,6 @@ export class Editor_Window extends HTMLElement {
                     }
                     console.log(token.start, start);
                     if (token.start > start - 1) {
-                        document.title = "wtf";
                         if (span === null){
                             span = document.createElement("span");
                             div.appendChild(span);
