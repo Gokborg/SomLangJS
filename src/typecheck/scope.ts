@@ -1,12 +1,15 @@
+import { AstNode } from "../ast.ts";
 import { Type } from "../type.ts";
 import { Variable } from "./variable.ts";
-
 export class Scopes {
   top = new Scope();
-  put(name: string, type: Type): void | Variable {
-    return this.top.put(name, type);
+  get_top(name: string): undefined | Variable {
+    return this.top.get_top(name);
   }
-  get(name: string): void | Variable {
+  put(name: string, type: Type, node?: AstNode): Variable {
+    return this.top.put(name, type, node);
+  }
+  get(name: string): undefined | Variable {
     return this.top.get(name);
   }
 
@@ -23,18 +26,20 @@ export class Scopes {
 }
 
 export class Scope {
-  variables: Record<string, Variable | void> = {}; 
+  variables: Record<string, Variable | undefined> = {}; 
   constructor(readonly parent?: Scope) {}
 
-  put(name: string, type: Type): void | Variable {
-    if (this.get(name)) {
-      return undefined;
-    }
-    const variable = new Variable(this, type);
-    this.variables[name] = variable;
+  get_top(name: string): undefined | Variable {
+    return this.variables[name];
   }
 
-  get(name: string): void | Variable {
+  put(name: string, type: Type, node?: AstNode): Variable {
+    const variable = new Variable(this, type, node);
+    this.variables[name] = variable;
+    return variable;
+  }
+
+  get(name: string): undefined | Variable {
     return this.variables[name] ?? this.parent?.get(name);
   }
 }

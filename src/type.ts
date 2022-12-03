@@ -8,7 +8,7 @@ export interface IType {
 export class ArrayType implements IType {
   constructor(public iner: Type){}
   eq(other: Type): boolean {
-    return other instanceof ArrayType && this.iner.eq(other);
+    return other instanceof ArrayType && this.iner.eq(other.iner);
   }
   toString(): string {
       return `${this.iner.toString()}[]`;
@@ -18,7 +18,7 @@ export class ArrayType implements IType {
 export class Pointer implements IType {
   constructor(public iner: Type){}
   eq(other: Type): boolean {
-    return other instanceof Pointer && this.iner.eq(other);
+    return other instanceof Pointer && this.iner.eq(other.iner);
   }
   toString(): string {
       return `${this.iner.toString()}*`;

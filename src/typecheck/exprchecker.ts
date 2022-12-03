@@ -27,6 +27,7 @@ export function checkExpr(checker: TypeChecker, node: ast.Expression): Type {
     } else if (node instanceof ast.ArrayAccess) {
         return checkArrayAccess(checker, node);
     }
+    return NoType;
 }
 
 function checkArrayLiteral(checker: TypeChecker, node: ast.ArrayLiteral): Type {

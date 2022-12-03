@@ -41,6 +41,7 @@ export class TypeChecker {
                 return type;
             }
         }
+        this.err.error(tree.start, `Expected Type ${types} but got ${type}`)
         return this.set(tree, NoType);
 
     } 
@@ -86,14 +87,26 @@ function checkWhile(checker: TypeChecker, tree: ast.WhileStatement) {
 }
 
 function checkAssignment(checker: TypeChecker, tree: ast.Assignment) {
-    checkExpr(checker, tree.expr);
+    const type = checkExpr(checker, tree.name);
+    checkExpr(checker, tree.expr)
+    checker.expect(tree.expr, type);
 }
-function checkDeclaration(checker: TypeChecker, tree: ast.Declaration) {
-    checker.scopes.put(tree.name.token.value, Prim.UINT);
 
+function checkDeclaration(checker: TypeChecker, tree: ast.Declaration) {
+    const type = tree.vartype.type;
+    console.log(">>", type);
     if (tree.expr) {
         checkExpr(checker, tree.expr);
+        console.log(checker.type(tree.expr))
+        checker.expect(tree.expr, type);
     }
+    const old = checker.scopes.get_top(tree.name.token.value);
+    if (old) {
+        checker.err.error(tree.name.token, "Redefined variable");
+    } else {
+        checker.scopes.put(tree.name.token.value, Prim.UINT, tree.name);
+    }
+
 }
 function checkMacroDeclaration(checker: TypeChecker, tree: ast.MacroDeclaration) {
 
