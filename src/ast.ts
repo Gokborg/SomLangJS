@@ -38,7 +38,7 @@ export class IfStatement implements IStatement {
     toString() {
       return `If(\n\t${this.condition} \n\t${this.body} else \n\t${this.child ?? "nothing"})`;
     }
-  }
+}
 
 export class WhileStatement implements IStatement {
     constructor(public condition: Expression, public body: Body) {}
@@ -50,7 +50,7 @@ export class WhileStatement implements IStatement {
     toString() {
       return `While(\n\t${this.condition} \n\t${this.body})`;
     }
-  }
+}
   
 export class MacroDeclaration implements IStatement {
     constructor(
@@ -82,7 +82,7 @@ export class MacroCall implements IStatement {
 
 export class Declaration implements IStatement {
     constructor(
-        public vartype: VarType,
+        public vartype: TypeNode,
         public name: Identifier,
         public expr?: Expression
     ) {}
@@ -97,27 +97,50 @@ export class Declaration implements IStatement {
 }
 
 export class Assignment implements IStatement {
-    constructor(public name: Identifier, public expr: Expression) {}
+    constructor(public vartype: TypeNode, public name: Identifier, public expr: Expression) {}
 
     get start(): Token {
         return this.name.start;
     }
 
     toString() {
-      return `Assignment(${this.name} = ${this.expr})`;
+      return `Assignment(${this.vartype} ${this.name} = ${this.expr})`;
     }
 }
 
-export class VarType {
-    constructor(public type: Type, public token: Token) {}
+export type TypeNode = VarArray | VarType;
+export class VarType implements AstNode {
+    constructor(public token: Token) {}
 
     get start(): Token {
         return this.token;
     }
 
     toString() {
-      return `VarType(${this.type} ${this.token})`;
+      return `VarType(${this.token})`;
     }
+}
+
+export class VarArray implements AstNode {
+  constructor(public iner: TypeNode, public size?: Expression) {}
+
+  get start(): Token {
+    return this.iner.start;
+  }
+  toString() {
+    return `${this.iner}[${this.size ?? ""}]`;
+  }
+}
+
+export class VarPointer implements AstNode {
+  constructor(public iner: TypeNode) {}
+
+  get start(): Token {
+    return this.iner.start;
+  }
+  toString() {
+    return `${this.iner}*`;
+  }
 }
 
 //Expressions

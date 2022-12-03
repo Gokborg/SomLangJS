@@ -6,12 +6,12 @@ export interface IType {
 }
 
 export class ArrayType implements IType {
-  constructor(public iner: Type){}
+  constructor(public iner: Type, public size?: number){}
   eq(other: Type): boolean {
     return other instanceof ArrayType && this.iner.eq(other.iner);
   }
   toString(): string {
-      return `${this.iner.toString()}[]`;
+      return `${this.iner.toString()}[${this.size ?? ""}]`;
   }
 }
 
@@ -32,7 +32,7 @@ export class Prim implements IType {
   eq(other: Type): boolean {
     return this === other;
   }
-  static ERROR = new Prim("UINT");
+  static ERROR = new Prim("ERROR");
   static UINT = new Prim("UINT");
   static CHAR = new Prim("CHAR");
   static BOOL = new Prim("BOOL");

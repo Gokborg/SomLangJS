@@ -25,8 +25,9 @@ export class Editor_Window extends HTMLElement {
 
         const resize_observer = new ResizeObserver(() => this.render_lines());
         resize_observer.observe(this);
-
     }
+    public get_tokens!: (src: string) => Token[]; 
+
     get value(){
         return this.input.value;
     }
@@ -105,7 +106,7 @@ export class Editor_Window extends HTMLElement {
 
 
         let div: Element | null = this.colors.firstElementChild;
-        const all_tokens = lex(this.lines);
+        const all_tokens = this.get_tokens(this.value);
         // for (let i = 0; )
 
         let token_i = 0;

@@ -13,6 +13,18 @@ export class Scopes {
     return this.top.get(name);
   }
 
+  put_type(name: string, type: Type) {
+    return this.top.put_type(name, type);
+  }
+  
+  top_type(name: string): undefined | Type {
+    return this.top.top_type(name);
+  }
+
+  get_type(name: string): undefined | Type {
+    return this.top.get_type(name);
+  }
+
   push() {
     this.top = new Scope(this.top);
   }
@@ -27,6 +39,7 @@ export class Scopes {
 
 export class Scope {
   variables: Record<string, Variable | undefined> = {}; 
+  types: Record<string, Type> = {}
   constructor(readonly parent?: Scope) {}
 
   get_top(name: string): undefined | Variable {
@@ -41,5 +54,17 @@ export class Scope {
 
   get(name: string): undefined | Variable {
     return this.variables[name] ?? this.parent?.get(name);
+  }
+
+  put_type(name: string, type: Type) {
+    this.types[name] = type;
+  }
+
+  top_type(name: string): undefined | Type {
+    return this.types[name];
+  }
+
+  get_type(name: string): undefined | Type {
+    return this.types[name] ?? this.parent?.get_type(name);
   }
 }

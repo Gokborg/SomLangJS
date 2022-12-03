@@ -2,7 +2,7 @@ import * as ast from "./ast.ts";
 
 export class Asm {
     instrs: string[];
-    constructor(readonly source: ast.AstNode) {
+    constructor() {
         this.instrs = [];
     }
     toString() {
@@ -13,6 +13,9 @@ export class Asm {
     }
     putLOAD(reg: number, addr: number) {
         this.instrs.push("LOD R" + reg + " #" + addr);
+    }
+    putLOADWITHREG(reg: number, reg2: number) {
+        this.instrs.push("LOD R" + reg + " R" + reg2);
     }
     putSTORE(addr: number, reg: number) {
         this.instrs.push("STR #" + addr + " R" + reg);
@@ -43,37 +46,33 @@ export class Asm {
 export class CodeGeneration {
     allocator: Allocator;
     label: number;
-    asmList: Asm[];
+    asm: Asm;
 
     constructor(maxRegisters: number) {
-        this.asmList = [];
+        this.asm = new Asm();
         this.allocator = new Allocator(maxRegisters);
         this.label = 0;
     }
 
-    gen(astNodes: ast.Statement[]) : Asm[]{
+    gen(astNodes: ast.Statement[]) : Asm{
         for(const astNode of astNodes) {
             this.genStatement(astNode);
         }
-        return this.asmList;
+        return this.asm;
     }
 
     genStatement(statement: ast.Statement) {
-        const asm: Asm = new Asm(statement);
         if(statement instanceof ast.Declaration) {
-            this.genDeclaration(asm, statement);
-            this.asmList.push(asm);
+            this.genDeclaration(statement);
         }
         else if(statement instanceof ast.Assignment) {
-            this.genAssignment(asm, statement);
-            this.asmList.push(asm);
+            this.genAssignment(statement);
         }
         else if(statement instanceof ast.IfStatement) {
             this.genIfStatement(statement, undefined);
         }
         else if(statement instanceof ast.WhileStatement) {
-            this.genWhileStatement(asm, statement);
-            this.asmList.push(asm);
+            this.genWhileStatement(statement);
         }
         else {
             //error - No code gen for this statement
@@ -87,16 +86,14 @@ export class CodeGeneration {
         }
     }
 
-    genWhileStatement(asm: Asm, whileStatement: ast.WhileStatement) {
+    genWhileStatement(whileStatement: ast.WhileStatement) {
         const endLabel: string = this.genLabel();
         const startLabel: string = this.genLabel();
-        const startAsm: Asm = new Asm(whileStatement.condition);
-        startAsm.putLABEL(startLabel);
-        this.genCondition(startAsm, whileStatement.condition, endLabel);
-        this.asmList.push(startAsm);
+        this.asm.putLABEL(startLabel);
+        this.genCondition(whileStatement.condition, endLabel);
         this.genBody(whileStatement.body);
-        asm.putJMP(startLabel);
-        asm.putLABEL(endLabel);
+        this.asm.putJMP(startLabel);
+        this.asm.putLABEL(endLabel);
     }
 
     genIfStatement(ifStatement: ast.IfStatement, endLabel: undefined | string) {
@@ -107,26 +104,20 @@ export class CodeGeneration {
         if(ifStatement.child === undefined && endLabel != undefined) {
             label = endLabel;
         }
-        const condAsm: Asm = new Asm(ifStatement.condition);
-        this.genCondition(condAsm, ifStatement.condition, label)
-        this.asmList.push(condAsm);
+        this.genCondition(ifStatement.condition, label);
         this.genBody(ifStatement.body);
-        const asm: Asm = new Asm(ifStatement);
         if(ifStatement.child != undefined && endLabel != undefined) {
-            asm.putJMP(endLabel);
+            this.asm.putJMP(endLabel);
         }
-        asm.putLABEL(label);
-        this.asmList.push(asm);
+        this.asm.putLABEL(label);
 
         if(ifStatement.child instanceof ast.IfStatement) {
             this.genIfStatement(ifStatement.child, endLabel);
         }
         else if(ifStatement.child instanceof ast.Body) {
             this.genBody(ifStatement.child);
-            const elseAsm: Asm = new Asm(ifStatement.child);
             if(endLabel != undefined) {
-                elseAsm.putLABEL(endLabel);
-                this.asmList.push(elseAsm);
+                this.asm.putLABEL(endLabel);
             }
             else {
                 console.log("ERROR");
@@ -134,32 +125,32 @@ export class CodeGeneration {
         }
     }
 
-    genCondition(asm: Asm, condition: ast.Expression, endLabel: string) {
+    genCondition(condition: ast.Expression, endLabel: string) {
         if(!(condition instanceof ast.BinaryOp)) {
             //generate an error here probably
-            return asm;
+            return;
         }
-        const reg1: number = this.genExpression(asm, condition.expr1);
-        const reg2: number = this.genExpression(asm, condition.expr2);
+        const reg1: number = this.genExpression(condition.expr1);
+        const reg2: number = this.genExpression(condition.expr2);
         const op: string = condition.op.value
         switch(op) {
             case ">": {
-                asm.putBRANCH("BLE", endLabel, reg1, reg2); break;
+                this.asm.putBRANCH("BLE", endLabel, reg1, reg2); break;
             }
             case ">=": {
-                asm.putBRANCH("BRL", endLabel, reg1, reg2); break;
+                this.asm.putBRANCH("BRL", endLabel, reg1, reg2); break;
             }
             case "<": {
-                asm.putBRANCH("BGE", endLabel, reg1, reg2); break;
+                this.asm.putBRANCH("BGE", endLabel, reg1, reg2); break;
             }
             case "<=": {
-                asm.putBRANCH("BRG", endLabel, reg1, reg2); break;
+                this.asm.putBRANCH("BRG", endLabel, reg1, reg2); break;
             }
             case "==": {
-                asm.putBRANCH("BNE", endLabel, reg1, reg2); break;
+                this.asm.putBRANCH("BNE", endLabel, reg1, reg2); break;
             }
             case "!=": {
-                asm.putBRANCH("BRE", endLabel, reg1, reg2); break;
+                this.asm.putBRANCH("BRE", endLabel, reg1, reg2); break;
             }
             default: {
                 //Generate error here, invalid condition op
@@ -167,7 +158,6 @@ export class CodeGeneration {
         }
         this.allocator.setFreeRegister(reg1);
         this.allocator.setFreeRegister(reg2);
-        return asm;
     }
 
     genLabel() : string{
@@ -175,56 +165,107 @@ export class CodeGeneration {
         return ".LABEL_" + this.label;
     }
 
-    genDeclaration(asm: Asm, dec: ast.Declaration) {
-        const varType: ast.VarType = dec.vartype;
+    genDeclaration(dec: ast.Declaration) {
+        const varType: ast.TypeNode = dec.vartype;
         const varName: string = dec.name.token.value;
-        const addr: number = this.allocator.addVariable(varName);
-        if(dec.expr) {
-            const reg: number = this.genExpression(asm, dec.expr);
-            asm.putSTORE(addr, reg)
-            this.allocator.setFreeRegister(reg);
+
+        //Array generation
+        if(varType instanceof ast.VarArray) {
+            varType.size
+            if(dec.expr instanceof ast.ArrayLiteral) {
+                const memArray: number = this.genArrayLiteral(dec.expr);
+                this.allocator.addVariableAndAddr(varName, memArray);
+            }
+            return;
+        }
+        else {
+            const varAddr: number = this.allocator.addVariable(varName);
+            if(dec.expr) {
+                const reg: number = this.genExpression(dec.expr);
+                this.asm.putSTORE(varAddr, reg)
+                this.allocator.setFreeRegister(reg);
+            }
         }
     }
 
-    genAssignment(asm: Asm, assign: ast.Assignment) {
+    genAssignment(assign: ast.Assignment) {
         const varName: string = assign.name.token.value;
         const addr: number = this.allocator.hasVariable(varName);
         if(addr == -1) {
             //generate error, variable was never declared
             return;
         }
-        const reg: number = this.genExpression(asm, assign.expr);
-        asm.putSTORE(addr, reg);
-        this.allocator.setFreeRegister(reg);
+        if(assign.vartype instanceof ast.VarArray && assign.vartype.size != undefined) {
+            const regIndex: number = this.genExpression(assign.vartype.size);
+            const regArray: number = this.allocator.getFreeRegister();
+            this.asm.putLOAD(regArray, addr);
+            this.asm.putADD(regIndex, regArray, regIndex);
+            this.allocator.setFreeRegister(regArray);
+            //regIndex now holds the index
+
+            const regExpr: number = this.genExpression(assign.expr);
+            this.asm.putLOAD(regIndex, regExpr);
+        }
+        else {
+            const reg: number = this.genExpression(assign.expr);
+            this.asm.putSTORE(addr, reg);
+            this.allocator.setFreeRegister(reg);
+        }
     }
 
-    genExpression(asm: Asm, expr: ast.Expression) : number{
+    genArrayLiteral(arrayLit: ast.ArrayLiteral) : number {
+        let arrayItemsMemory: number[] = [];
+        //First generate memory addresses of all items in the array
+        for(const arrayItem of arrayLit.items) {
+            const memArrayItem: number = this.allocator.getFreeMemory();
+            arrayItemsMemory.push(memArrayItem);
+        }
+        //Second generate each item's expression and put into memory
+        for(let i = 0; i < arrayLit.items.length; i++) {
+            const regItem: number = this.genExpression(arrayLit.items[i]);
+            this.asm.putSTORE(arrayItemsMemory[i], regItem);
+            this.allocator.setFreeRegister(regItem);
+        }
+        return arrayItemsMemory[0];
+    }
+
+    genExpression(expr: ast.Expression) : number{
         if(expr instanceof ast.Number) {
             const reg: number = this.allocator.getFreeRegister();
-            asm.putLI(reg, parseInt(expr.token.value, 10))
+            this.asm.putLI(reg, parseInt(expr.token.value, 10))
             return reg;
         }
         else if(expr instanceof ast.Identifier) {
             const memAddr: number = this.allocator.addVariable(expr.token.value);
             const reg: number = this.allocator.getFreeRegister();
-            asm.putLOAD(reg, memAddr);
+            this.asm.putLOAD(reg, memAddr);
             return reg;
         }
+        else if(expr instanceof ast.ArrayAccess) {
+            const regIndex: number = this.genExpression(expr.index);
+            const memArray: number = this.allocator.hasVariable(expr.array.token.value);
+            const regArray: number = this.allocator.getFreeRegister();
+            this.asm.putLI(regArray, (memArray+1));
+            this.asm.putADD(regIndex, regArray, regIndex);
+            this.asm.putLOADWITHREG(regIndex, regIndex);
+            this.allocator.setFreeRegister(regArray);
+            return regIndex;
+        }
         else if(expr instanceof ast.BinaryOp) {
-            const reg1: number = this.genExpression(asm, expr.expr1);
-            const reg2: number = this.genExpression(asm, expr.expr2);
+            const reg1: number = this.genExpression(expr.expr1);
+            const reg2: number = this.genExpression(expr.expr2);
             switch(expr.op.value) {
                 case "+": {
-                    asm.putADD(reg1, reg1, reg2); break;
+                    this.asm.putADD(reg1, reg1, reg2); break;
                 }
                 case "-": {
-                    asm.putSUB(reg1, reg1, reg2); break;
+                    this.asm.putSUB(reg1, reg1, reg2); break;
                 }
                 case "*": {
-                    asm.putMULT(reg1, reg1, reg2); break;
+                    this.asm.putMULT(reg1, reg1, reg2); break;
                 }
                 case "/": {
-                    asm.putDIV(reg1, reg1, reg2); break;
+                    this.asm.putDIV(reg1, reg1, reg2); break;
                 }
                 default : {
                     //Generate error - operator token is incorrect
@@ -251,6 +292,10 @@ class Allocator {
         this.registers.fill(false);
         this.memory = new Array(512);
         this.memory.fill(false);
+    }
+
+    addVariableAndAddr(varName: string, addr: number) {
+        this.varToMemory[varName] = addr;
     }
 
     hasVariable(varName: string) : number {

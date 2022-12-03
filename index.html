@@ -55,6 +55,7 @@
         <nav style="display: flex; justify-items: center; width: 100%;">
             <button>Lexer</button>
             <button>Parser</button>
+            <button>Checker</button>
             <button>URCL</button>
             <button id="error-button">Errors</button>
         </nav>
@@ -65,6 +66,10 @@
         <div>
             <h2>Parser</h2>
             <pre id="parser"></pre>
+        </div>
+        <div>
+            <h2>Type Checker</h2>
+            <pre id="checker"></pre>
         </div>
         <div>
             <h2>URCL <button onclick="navigator.clipboard.writeText(document.querySelector('#urcl').value);">Copy</button></h2>

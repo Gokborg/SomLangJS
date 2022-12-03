@@ -25,8 +25,6 @@ class Buffer {
 }
 
 const keywords: Record<string, Kind> = {
-    "uint": Kind.VAR_TYPE,
-    "char": Kind.VAR_TYPE,
     "if": Kind.IF,
     "else": Kind.ELSE,
     "elif": Kind.ELIF,

@@ -7,7 +7,7 @@ export class TokenBuffer {
   private pos!: number;
   private content!: Token[];
   public current!: Token;
-  private lastToken!: Token;
+  public lastToken!: Token;
   public done!: boolean;
 
   set(content: Token[]) {
@@ -18,6 +18,10 @@ export class TokenBuffer {
     // Saving last token for better errors so when the buffer
     // is finished we can see the last token it was working on
     this.lastToken = this.content[this.pos];
+  }
+
+  peek(amt: number) : Token {
+    return this.content[this.pos + amt];
   }
 
   next(): Token {

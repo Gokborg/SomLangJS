@@ -12,11 +12,17 @@ export function checkExpr(checker: TypeChecker, node: ast.Expression): Type {
     if (node instanceof ast.BinaryOp) {
         return checkBinaryOp(checker, node);
     } else if (node instanceof ast.Number) {
+        const number = Number(node.token.value);
+        if (!Number.isInteger(number)) {
+            checker.err.error(node.token, "Not an integer");
+        }
+        checker.constants.set(node, number);
         return checker.set(node, Prim.UINT);
     } else if (node instanceof ast.Identifier) {
         const variable = checker.scopes.get(node.token.value);
         console.log(checker.scopes);
         if (!variable) {
+            console.log(checker.scopes);
             checker.err.error(node.token, `Variable is undefined`);
             return checker.set(node, NoType);
         }
@@ -32,11 +38,7 @@ export function checkExpr(checker: TypeChecker, node: ast.Expression): Type {
 
 function checkArrayLiteral(checker: TypeChecker, node: ast.ArrayLiteral): Type {
     // fixme: infer the type depending on context
-    if (node.items.length == 0) {
-        checker.err.error(node.start, "Empty array");
-        return checker.set(node, NoType);
-    }
-    const type = checkExpr(checker, node.items[0]);
+    const type = node.items.length == 0 ? NoType : checkExpr(checker, node.items[0]);
     for (let i = 1; i < node.items.length; i++) {
         const other = checkExpr(checker, node.items[i]);
         if (type && other !== type) {
@@ -46,7 +48,7 @@ function checkArrayLiteral(checker: TypeChecker, node: ast.ArrayLiteral): Type {
     if (!type) {
         return checker.set(node, NoType);
     }
-    return checker.set(node, new ArrayType(type));
+    return checker.set(node, new ArrayType(type, node.items.length));
 }
 
 function checkArrayAccess(checker: TypeChecker, node: ast.ArrayAccess): Type {
@@ -55,8 +57,8 @@ function checkArrayAccess(checker: TypeChecker, node: ast.ArrayAccess): Type {
         checker.err.error(node.array.start, "Value is not indexable");
     }
     const index = checkExpr(checker, node.index);
-    if (index === Prim.UINT) {
-        checker.err.error(node.index.start, "Index should be a uint");
+    if (!index.eq(Prim.UINT)) {
+        checker.err.error(node.index.start, `Index should be a ${Prim.UINT} but is ${index}`);
     }
     if (array instanceof ArrayType) {
         return checker.set(node, array.iner);

@@ -4,8 +4,7 @@ import { Parser } from "../parser.ts";
 
 import { parseExpression } from "./exprparser.ts";
 
-export function parseAssignment(parser: Parser) {
-    const identifier: ast.Identifier = new ast.Identifier(parser.buf.expect(Kind.IDENTIFIER));
+export function parseAssignment(parser: Parser, identifier: ast.Identifier, vartype: ast.TypeNode) {
     const operators: Kind[] = [Kind.PLUS, Kind.MINUS, Kind.MULT, Kind.DIV];
     let op: undefined | Token;
     if(operators.includes(parser.buf.current.kind)) {
@@ -18,5 +17,5 @@ export function parseAssignment(parser: Parser) {
         expr = new ast.BinaryOp(identifier, op, expr);
     }
     parser.buf.expect(Kind.SEMICOLON);
-    return new ast.Assignment(identifier, expr);
+    return new ast.Assignment(vartype, identifier, expr);
 }

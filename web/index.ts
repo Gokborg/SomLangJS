@@ -1,8 +1,10 @@
 import { CodeGeneration } from "../src/codegen.ts";
 import { lex } from "../src/lexer.ts";
 import { Parser } from "../src/parser.ts";
+import { Token } from "../src/token.ts";
 import { TypeChecker } from "../src/typecheck/typechecker.ts";
 import "./editor/editor.ts";
+import { Editor_Window } from "./editor/editor.ts";
 
 {
 const output_container = document.getElementById("outputs") as HTMLOutputElement;
@@ -18,30 +20,33 @@ function select(select: number) {
         }
     }
 }
-select(2);
+select(3);
 buttons.forEach((button, i) => {
     button.onclick = e => select(i);
 });
 }
 {
-    const code = document.getElementById("code") as HTMLTextAreaElement;
+    const code = document.getElementById("code") as Editor_Window;
     const errorOutput = document.getElementById("error") as HTMLOutputElement;
     const lexOutput = document.getElementById("lexer") as HTMLOutputElement;
     const parseOutput = document.getElementById("parser") as HTMLOutputElement;
+    const checkerOutput = document.getElementById("checker") as HTMLOutputElement;
     const codegenOutput = document.getElementById("urcl") as HTMLOutputElement;
     const error_button = document.getElementById("error-button") as HTMLButtonElement;
 
-    code.oninput = oninput;
-    function oninput() {
+    // code.oninput = oninput;
+    code.get_tokens = oninput;
+    function oninput(src: string) {
         errorOutput.textContent = "";
         lexOutput.textContent = "";
         parseOutput.textContent = "";
-        error_button.classList.remove("error");
+        error_button.classList.remove("error")
+        let tokens: Token[] = [];
         try {
         if (code.value.length < 1) {
-            return;
+            return tokens;
         }
-        const results = lex(code.value.split("\n"));
+        const results = tokens = lex(code.value.split("\n"));
         let lexString = "";
         for (const r of results) {
             lexString += r + "\n";
@@ -56,27 +61,20 @@ buttons.forEach((button, i) => {
         } 
         parseOutput.textContent = parseString;
 
-        const checkResults = new TypeChecker(parser.err).check(parseResults);
+        const checker = new TypeChecker(parser.err)
+        checker.check(parseResults);
+        checkerOutput.textContent = checker.toString();
 
         // TODO: skip codegen on error
         const codegen = new CodeGeneration(7);
-        const asms = codegen.gen(parseResults);
-        let result = "";
-        for (const asm of asms) {
-            const token = asm.source.start;
-            //result += "// " + token.lineno + "\n";
-          let instrsInAsm = asm.instrs;
-          for (const instr of instrsInAsm) {
-            result += instr + "\n";
-          }
-          result += "\n";
-        }
-        codegenOutput.textContent = result;
+        const asm = codegen.gen(parseResults);
+        codegenOutput.textContent = asm.toString();
 
         if (parser.err.has_error()) {
             errorOutput.textContent = parser.err.toString();
             error_button.classList.add("error");
         }
+        return results;
 
         } catch (e) {
             if (e instanceof Error) {
@@ -84,7 +82,15 @@ buttons.forEach((button, i) => {
                 errorOutput.textContent = "[ERROR]:\n" + e.message;
             }
             error_button.classList.add("error");
+            return tokens;
         }
+        
     };
-    code.value = "";
+    code.value = `
+uint[] a = [1, 2, 3];
+a[0] = 4;
+a[1] = 5;
+a[2] = 6;
+uint b = a[0];
+    `;
 }
