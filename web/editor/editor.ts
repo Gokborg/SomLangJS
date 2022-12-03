@@ -1,15 +1,12 @@
-import { lex } from "../../src/lexer";
-import { Token } from "../../src/token";
-import { l } from "./l"
+import { lex } from "../../src/lexer.ts";
+import { Token } from "../../src/token.ts";
+import { l } from "./l.ts"
 
 export class Editor_Window extends HTMLElement {
     private line_nrs: HTMLElement;
     private code: HTMLElement;
     private input: HTMLTextAreaElement;
     private colors: HTMLElement;
-    // private profile_check = document.createElement("input");
-    private profiled: boolean[] = [];
-    private profile_present: boolean = false;
     private lines: string[] = [];
     tab_width = 4
     constructor(){
@@ -23,13 +20,12 @@ export class Editor_Window extends HTMLElement {
         );
 
         this.input.addEventListener("input", this.input_cb.bind(this));
-
         this.input.addEventListener("keydown", this.keydown_cb.bind(this));
+        this.onscroll = () => this.render_lines();
+
         const resize_observer = new ResizeObserver(() => this.render_lines());
         resize_observer.observe(this);
 
-
-        this.onscroll = () => this.render_lines();
     }
     get value(){
         return this.input.value;

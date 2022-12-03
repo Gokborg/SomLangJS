@@ -1,8 +1,8 @@
-import { CodeGeneration } from "../src/codegen";
-import { lex } from "../src/lexer";
-import { Parser } from "../src/parser";
-import { TypeChecker } from "../src/typecheck/typechecker";
-import "./editor/editor";
+import { CodeGeneration } from "../src/codegen.ts";
+import { lex } from "../src/lexer.ts";
+import { Parser } from "../src/parser.ts";
+import { TypeChecker } from "../src/typecheck/typechecker.ts";
+import "./editor/editor.ts";
 
 {
 const output_container = document.getElementById("outputs") as HTMLOutputElement;
@@ -38,6 +38,9 @@ buttons.forEach((button, i) => {
         parseOutput.textContent = "";
         error_button.classList.remove("error");
         try {
+        if (code.value.length < 1) {
+            return;
+        }
         const results = lex(code.value.split("\n"));
         let lexString = "";
         for (const r of results) {
@@ -77,10 +80,11 @@ buttons.forEach((button, i) => {
 
         } catch (e) {
             if (e instanceof Error) {
+                console.error(e);
                 errorOutput.textContent = "[ERROR]:\n" + e.message;
             }
             error_button.classList.add("error");
         }
     };
-    code.value = "uint a = 10;\n".repeat(100);
+    code.value = "";
 }
