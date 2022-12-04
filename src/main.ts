@@ -5,7 +5,7 @@ import { Parser } from "./parser.ts";
 import { CodeGeneration, Asm } from "./codegen.ts";
 const tokens = lex(`
 uint[] a = [1, 2, 3];
-uint b = a[0] + 5;
+a[0] = 4;
 `.split("\n"));
 console.log(tokens);
 const parser: Parser = new Parser();

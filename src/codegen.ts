@@ -198,13 +198,14 @@ export class CodeGeneration {
         if(assign.vartype instanceof ast.VarArray && assign.vartype.size != undefined) {
             const regIndex: number = this.genExpression(assign.vartype.size);
             const regArray: number = this.allocator.getFreeRegister();
-            this.asm.putLOAD(regArray, addr);
+            this.asm.putLI(regArray, addr);
             this.asm.putADD(regIndex, regArray, regIndex);
             this.allocator.setFreeRegister(regArray);
             //regIndex now holds the index
 
             const regExpr: number = this.genExpression(assign.expr);
-            this.asm.putLOAD(regIndex, regExpr);
+            this.asm.putSTORE(addr, regExpr);
+            this.allocator.setFreeRegister(regExpr);
         }
         else {
             const reg: number = this.genExpression(assign.expr);
@@ -323,7 +324,7 @@ class Allocator {
     getFreeMemory() : number {
         const addr: number = this.memory.indexOf(false);
         this.memory[addr] = true;
-        return addr+1;
+        return addr;
     }
 
     setFreeRegister(reg: number) {

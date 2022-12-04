@@ -25,7 +25,7 @@ export function parseIsVarOrArray(parser: Parser): ast.TypeNode  {
       }
     }
     return new ast.VarType(typeToken);
-  }
+}
 
 export function parseStatement(parser: Parser) : ast.Statement {
     switch (parser.buf.current.kind) {
