@@ -13,6 +13,7 @@ export type Statement = Body | IfStatement | WhileStatement
 export interface IStatement extends AstNode {}
 
 export class Body implements IStatement {
+    declare private _: undefined; // Hack to disable duck typing
     constructor(private open: Token, public content: Statement[]) {}
 
     get start(): Token {
@@ -25,6 +26,7 @@ export class Body implements IStatement {
 }
 
 export class IfStatement implements IStatement {
+    declare private _: undefined; // Hack to disable duck typing
     constructor(
         public condition: Expression,
         public body: Body,
@@ -41,6 +43,7 @@ export class IfStatement implements IStatement {
 }
 
 export class WhileStatement implements IStatement {
+    declare private _: undefined; // Hack to disable duck typing
     constructor(public condition: Expression, public body: Body) {}
 
     get start(): Token {
@@ -53,6 +56,7 @@ export class WhileStatement implements IStatement {
 }
   
 export class MacroDeclaration implements IStatement {
+    declare private _: undefined; // Hack to disable duck typing
     constructor(
         public name: Identifier,
         public args: Expression[],
@@ -69,6 +73,7 @@ export class MacroDeclaration implements IStatement {
   }
   
 export class MacroCall implements IStatement {
+    declare private _: undefined; // Hack to disable duck typing
     constructor(public name: Identifier, public args: IExpression[]) {}
 
     get start(): Token {
@@ -81,6 +86,7 @@ export class MacroCall implements IStatement {
 }
 
 export class Declaration implements IStatement {
+    declare private _: undefined; // Hack to disable duck typing
     constructor(
         public vartype: TypeNode,
         public name: Identifier,
@@ -97,6 +103,7 @@ export class Declaration implements IStatement {
 }
 
 export class Assignment implements IStatement {
+    declare private _: undefined; // Hack to disable duck typing
     constructor(public vartype: TypeNode, public name: Identifier, public expr: Expression) {}
 
     get start(): Token {
@@ -110,6 +117,7 @@ export class Assignment implements IStatement {
 
 export type TypeNode = VarArray | VarType;
 export class VarType implements AstNode {
+    declare private _: undefined; // Hack to disable duck typing
     constructor(public token: Token) {}
 
     get start(): Token {
@@ -122,25 +130,27 @@ export class VarType implements AstNode {
 }
 
 export class VarArray implements AstNode {
-  constructor(public iner: TypeNode, public size?: Expression) {}
+    declare private _: undefined; // Hack to disable duck typing
+    constructor(public iner: TypeNode, public size?: Expression) {}
 
-  get start(): Token {
-    return this.iner.start;
-  }
-  toString() {
-    return `${this.iner}[${this.size ?? ""}]`;
-  }
+    get start(): Token {
+        return this.iner.start;
+    }
+    toString() {
+        return `${this.iner}[${this.size ?? ""}]`;
+    }
 }
 
 export class VarPointer implements AstNode {
-  constructor(public iner: TypeNode) {}
+    declare private _: undefined; // Hack to disable duck typing
+    constructor(public iner: TypeNode) {}
 
-  get start(): Token {
-    return this.iner.start;
-  }
-  toString() {
-    return `${this.iner}*`;
-  }
+    get start(): Token {
+        return this.iner.start;
+    }
+    toString() {
+        return `${this.iner}*`;
+    }
 }
 
 //Expressions
@@ -149,6 +159,7 @@ export type Expression = Number | Identifier | BinaryOp | ArrayLiteral | ArrayAc
 export interface IExpression extends AstNode {}
 
 export class Number implements IExpression {
+    declare private _: undefined; // Hack to disable duck typing
     constructor(public token: Token) {}
 
     get start(): Token {
@@ -161,6 +172,7 @@ export class Number implements IExpression {
 }
 
 export class Identifier implements IExpression {
+    declare private _: undefined; // Hack to disable duck typing
     constructor(public token: Token) {}
 
     get start(): Token {
@@ -173,6 +185,7 @@ export class Identifier implements IExpression {
 }
 
 export class BinaryOp implements IExpression {
+    declare private _: undefined; // Hack to disable duck typing
     constructor(
         public expr1: Expression,
         public op: Token,
@@ -189,6 +202,7 @@ export class BinaryOp implements IExpression {
 }
 
 export class ArrayLiteral implements IExpression {
+    declare private _: undefined; // Hack to disable duck typing
     constructor(private open: Token, public items: Expression[]) {}
 
     get start(): Token {
@@ -201,6 +215,7 @@ export class ArrayLiteral implements IExpression {
   }
   
 export class ArrayAccess implements IExpression {
+    declare private _: undefined; // Hack to disable duck typing
     constructor(public array: Identifier, public index: Expression) {}
 
     get start(): Token {
