@@ -3,6 +3,7 @@ import { Type } from "../type.ts";
 import { Variable } from "./variable.ts";
 export class Scopes {
   top = new Scope();
+  scopes: Scope[] = [this.top];
   get_top(name: string): undefined | Variable {
     return this.top.get_top(name);
   }
@@ -27,6 +28,7 @@ export class Scopes {
 
   push() {
     this.top = new Scope(this.top);
+    this.scopes.push(this.top);
   }
   pop(): boolean {
     if (this.top.parent === undefined) {
@@ -34,6 +36,10 @@ export class Scopes {
     }
     this.top = this.top.parent;
     return true;
+  }
+
+  toString() {
+    return new ScopeFormatter(this.scopes).format(0);
   }
 }
 
@@ -66,5 +72,38 @@ export class Scope {
 
   get_type(name: string): undefined | Type {
     return this.types[name] ?? this.parent?.get_type(name);
+  }
+
+
+  get level(): number {
+    return 1 + (this.parent?.level ?? -1)
+  }
+}
+const indent = "  ";
+class ScopeFormatter {
+  constructor (public scopes: Scope[]) {}
+  output = "";
+  index = 0;
+  format(level: number) {
+    const scope = this.scopes[this.index];
+    if (level > 0) {
+      this.output += indent.repeat(level-1) + "{\n";
+    }
+    for (const [name, variable] of Object.entries(scope.variables)) {
+      this.output += indent.repeat(level) + `${variable?.type} ${name}\n`;
+    }
+    this.index++;
+    while (this.index < this.scopes.length) {
+      const child = this.scopes[this.index];
+      if (child.parent !== scope) {
+        break;
+      }
+      this.format(level + 1);
+    }
+    
+    if (level > 0) {
+      this.output += indent.repeat(level-1) + "}\n";
+    }
+    return this.output;
   }
 }

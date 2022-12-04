@@ -50,7 +50,7 @@ export class TypeChecker {
         }
         this.err.error(tree.start, `Expected Type ${types} but got ${type}`)
         return this.set(tree, NoType);
-    } 
+    }
 
 
     toString() {
@@ -62,6 +62,9 @@ export class TypeChecker {
         for (const [key, value] of this.constants) {
             output += `${value}: ${key}\n`;
         }
+
+        output += "\nScopes:\n";
+        output += this.scopes.toString();
 
         return output;
     }
