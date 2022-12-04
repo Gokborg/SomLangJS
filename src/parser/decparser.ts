@@ -21,5 +21,6 @@ export function parseDeclaration(parser: Parser, vartype: ast.TypeNode) {
       }
     }
   }
+  parser.buf.expect(Kind.SEMICOLON);
   return new ast.Declaration(vartype, identifier);
 }
