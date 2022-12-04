@@ -7,6 +7,8 @@ import {parseBody} from "./bodyparser.ts";
 import { parseIfStatement } from "./ifparser.ts";
 import { parseWhileStatement } from "./whileparser.ts";
 import { parseExpression } from "./exprparser.ts";
+import { parseMacro } from "./macroparser.ts";
+import { parseMacroCall } from "./macrocallparser.ts";
 
 export function parseIsVarOrArray(parser: Parser): ast.TypeNode  {
     const typeToken: Token = parser.buf.expect(Kind.IDENTIFIER);
@@ -29,6 +31,8 @@ export function parseStatement(parser: Parser) : ast.Statement {
     switch (parser.buf.current.kind) {
         case Kind.IF: return parseIfStatement(parser);
         case Kind.WHILE: return parseWhileStatement(parser);
+        case Kind.MACRO: return parseMacro(parser);
+        case Kind.MACROCALL: return parseMacroCall(parser);
         case Kind.OPEN_BRACE: return parseBody(parser);
         case Kind.IDENTIFIER: {
             const ident = new ast.Identifier(parser.buf.current);

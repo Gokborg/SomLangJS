@@ -23,6 +23,5 @@ export class Parser {
             ast_nodes.push(parseStatement(this));
         }
         return ast_nodes;
-
     }
 }
