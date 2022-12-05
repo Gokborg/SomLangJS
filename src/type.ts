@@ -3,10 +3,16 @@ export type Type = IType & (Prim | ArrayType | Pointer);
 export interface IType {
   toString(): string;
   eq(other: Type): boolean;
+  par_eq(other: Type): boolean;
 }
 
 export class ArrayType implements IType {
   constructor(public iner: Type, public size?: number){}
+  par_eq(other: Type): boolean {
+    return other instanceof ArrayType
+      && (this.size === undefined || this.size === other.size)
+      && this.iner.par_eq(other.iner);
+  }
   eq(other: Type): boolean {
     return other instanceof ArrayType && this.iner.eq(other.iner);
   }
@@ -17,6 +23,9 @@ export class ArrayType implements IType {
 
 export class Pointer implements IType {
   constructor(public iner: Type){}
+  par_eq(other: Type): boolean {
+    return other instanceof Pointer && this.iner.par_eq(other.iner);
+  }
   eq(other: Type): boolean {
     return other instanceof Pointer && this.iner.eq(other.iner);
   }
@@ -28,6 +37,9 @@ export class Pointer implements IType {
 export class Prim implements IType {
   private constructor(private name: string) {
 
+  }
+  par_eq(other: Type): boolean {
+    return this === Prim.ERROR || this.eq(other);
   }
   eq(other: Type): boolean {
     return this === other;

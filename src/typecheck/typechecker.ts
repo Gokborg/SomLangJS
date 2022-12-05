@@ -130,6 +130,10 @@ function checkAssignment(checker: TypeChecker, tree: ast.Assignment) {
 }
 
 function checkTypeNode(checker: TypeChecker, tree: ast.TypeNode): Type {
+    return checker.set(tree, checkTypeNodeR(checker, tree));
+}
+
+function checkTypeNodeR(checker: TypeChecker, tree: ast.TypeNode): Type {
     if (tree instanceof ast.VarType) {
         const type = checker.scopes.get_type(tree.token.value);
         if (type === undefined) {
@@ -138,7 +142,7 @@ function checkTypeNode(checker: TypeChecker, tree: ast.TypeNode): Type {
         }
         return type;
     } else if (tree instanceof ast.VarArray) {
-        const iner = checkTypeNode(checker, tree.iner);
+        const iner = checkTypeNodeR(checker, tree.iner);
         if (tree.size) {
             const sizeType = checkExpr(checker, tree.size);
             const size = checker.constants.get(tree.size);
@@ -151,7 +155,7 @@ function checkTypeNode(checker: TypeChecker, tree: ast.TypeNode): Type {
             return new ArrayType(iner);
         }
     } else if (tree instanceof ast.VarPointer) {
-        const iner = checkTypeNode(checker, tree.iner);
+        const iner = checkTypeNodeR(checker, tree.iner);
         return new Pointer(iner);
     }
 
@@ -159,17 +163,14 @@ function checkTypeNode(checker: TypeChecker, tree: ast.TypeNode): Type {
 }
 
 function checkDeclaration(checker: TypeChecker, tree: ast.Declaration) {
-    const type = checkTypeNode(checker, tree.vartype);
+    let type = checkTypeNode(checker, tree.vartype);
+    expr:
     if (tree.expr) {
         const expr = checkExpr(checker, tree.expr);
-        if (type instanceof ArrayType && expr instanceof ArrayType) {
-            if (type.size === undefined) {
-                type.size = expr.size;
-            }
-            type.size = expr.size;
-            if (type.size === undefined) {
-                checker.err.error(tree.expr.start, "Array must have a size");
-            }
+        if (type.par_eq(expr)) {
+            type = expr;
+        } else {
+            checker.err.error(tree.expr.start, `Expected Type ${type} but got ${expr}`)
         }
         checker.expect(tree.expr, type);
     }
@@ -179,6 +180,7 @@ function checkDeclaration(checker: TypeChecker, tree: ast.Declaration) {
     } else {
         checker.scopes.put(tree.name.token.value, type, tree.name);
     }
+    checker.set(tree.name, type);
 
 }
 function checkMacroDeclaration(checker: TypeChecker, tree: ast.MacroDeclaration) {
