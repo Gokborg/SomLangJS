@@ -228,6 +228,7 @@ export class CodeGeneration {
             const regExpr: number = this.genExpression(assign.expr);
             this.asm.putSTOREWITHREG(regIndex, regExpr);
             this.allocator.setFreeRegister(regExpr);
+            this.allocator.setFreeRegister(regIndex);
         }
         else {
             const reg: number = this.genExpression(assign.expr);
