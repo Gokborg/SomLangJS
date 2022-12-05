@@ -86,11 +86,5 @@ buttons.forEach((button, i) => {
         }
         
     };
-    code.value = `
-uint[] a = [1, 2, 3];
-a[0] = 4;
-a[1] = 5;
-a[2] = 6;
-uint b = a[0];
-    `;
+    code.value = `uint a = 10;\nuint* p = &a;\nuint b = *a;`;
 }

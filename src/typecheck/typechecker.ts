@@ -50,7 +50,9 @@ export class TypeChecker {
                 return type;
             }
         }
-        this.err.error(tree.start, `Expected Type ${types} but got ${type}`)
+        if (type !== NoType) {
+            this.err.error(tree.start, `Expected Type ${types} but got ${type}`)
+        }
         return this.set(tree, NoType);
     }
 
@@ -66,7 +68,7 @@ export class TypeChecker {
         }
         output += "\nVariables:\n"
         for (const [key, value] of this.variables) {
-            output += `${value}: ${key}\n`;
+            output += `${value.type}: ${key}\n`;
         }
 
         output += "\nScopes:\n";
@@ -175,10 +177,9 @@ function checkDeclaration(checker: TypeChecker, tree: ast.Declaration) {
         const expr = checkExpr(checker, tree.expr);
         if (type.par_eq(expr)) {
             type = expr;
-        } else {
+        } else if (expr !== NoType) {
             checker.err.error(tree.expr.start, `Expected Type ${type} but got ${expr}`)
         }
-        checker.expect(tree.expr, type);
     }
     const old = checker.scopes.get_top(tree.name.token.value);
     if (old) {
@@ -187,7 +188,6 @@ function checkDeclaration(checker: TypeChecker, tree: ast.Declaration) {
         checker.scopes.put(tree.name.token.value, type, tree.name);
     }
     checker.set(tree.name, type);
-
 }
 function checkMacroDeclaration(checker: TypeChecker, tree: ast.MacroDeclaration) {
 

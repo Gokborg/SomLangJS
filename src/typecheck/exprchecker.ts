@@ -33,7 +33,10 @@ export function checkExpr(checker: TypeChecker, node: ast.Expression): Type {
         return checkArrayAccess(checker, node);
     } else if (node instanceof ast.Reference) {
         return checkReference(checker, node);
+    } else if (node instanceof ast.Dereference) {
+        return checkDereference(checker, node);
     }
+    const a: never = node;
     return NoType;
 }
 
@@ -75,6 +78,18 @@ function checkReference(checker: TypeChecker, node: ast.Reference): Type {
         return NoType;
     }
     return checker.set(node, new Pointer(variable.type));
+}
+
+function checkDereference(checker: TypeChecker, node: ast.Dereference): Type {
+    const type = checkExpr(checker, node.iner);
+    if (!(type instanceof Pointer)) {
+        if (type !== NoType) {
+            checker.err.error(node.iner.start, `Expected pointer type but got ${type}`);
+        }
+        return checker.set(node, NoType);
+    }
+
+    return type.iner;
 }
 
 function checkBinaryOp(checker: TypeChecker, node: ast.BinaryOp): Type {
