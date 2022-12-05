@@ -1,4 +1,7 @@
 {
+    "tasks": {
+        "build": "deno run --allow-all https://deno.land/x/esbuild@v0.15.18/mod.js web/index.ts --outdir=target --bundle --format=esm --sourcemap"
+    },
     "compilerOptions": {
         "strict": true,
         "lib": [
