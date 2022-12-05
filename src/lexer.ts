@@ -30,6 +30,7 @@ const keywords: Record<string, Kind> = {
     "elif": Kind.ELIF,
     "while": Kind.WHILE,
     "macro": Kind.MACRO,
+    "const" : Kind.CONSTANT,
 }
 
 const symbols : Record<string, Kind> = {

@@ -14,7 +14,7 @@ export function parseIsVarOrArray(parser: Parser): ast.TypeNode  {
     const typeToken: Token = parser.buf.expect(Kind.IDENTIFIER);
     switch (parser.buf.current.kind) {
       case Kind.OPEN_SQUARE: {
-        console.log(">>>>", parser.buf.current);
+        //console.log(">>>>", parser.buf.current);
         if (parser.buf.next().eq(Kind.CLOSE_SQUARE)) {
           parser.buf.next();
           return new ast.VarArray(new ast.VarType(typeToken));

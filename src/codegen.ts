@@ -20,6 +20,9 @@ export class Asm {
     putSTORE(addr: number, reg: number) {
         this.instrs.push("STR #" + addr + " R" + reg);
     }
+    putSTOREWITHREG(reg: number, reg2: number) {
+        this.instrs.push("STR R" + reg + " R" + reg2);
+    }
     putADD(dest: number, srcA: number, srcB: number) {
         this.instrs.push("ADD R" + dest + " R" + srcA + " R" + srcB);
     }
@@ -171,10 +174,29 @@ export class CodeGeneration {
 
         //Array generation
         if(varType instanceof ast.VarArray) {
-            varType.size
             if(dec.expr instanceof ast.ArrayLiteral) {
                 const memArray: number = this.genArrayLiteral(dec.expr);
                 this.allocator.addVariableAndAddr(varName, memArray);
+            }
+            else {
+                if(varType.size) {
+                    //TODO: Make size compatible with an expression
+                    //Only allows size to be a number, once constants are added a constant expr evaluator will have to be made
+                    //Meaning right now all you can do is uint[5] a; You can't do uint[b] a where b is a constant
+                    if(varType.size instanceof ast.Number) {
+                        //TODO: Change allocation size based on the variable type
+                        //Problem is this will only allocate one memory slot for each arrray item
+                        //However, this won't work for items that use a type larger than a byte (one memory slot)
+                        //For now, since no other types have been programmed and only uint/char are there this is ok
+                        const arraySize: number = parseInt(varType.size.token.value, 10);
+                        let arrayItemsMemory: number[] = [];
+                        for(let i = 0; i < arraySize; i++) {
+                            const memArrayAddr: number = this.allocator.getFreeMemory();
+                            arrayItemsMemory.push(memArrayAddr);
+                        }
+                        this.allocator.addVariableAndAddr(varName, arrayItemsMemory[0]);
+                    }
+                }
             }
             return;
         }
@@ -204,7 +226,7 @@ export class CodeGeneration {
             //regIndex now holds the index
 
             const regExpr: number = this.genExpression(assign.expr);
-            this.asm.putSTORE(addr, regExpr);
+            this.asm.putSTOREWITHREG(regIndex, regExpr);
             this.allocator.setFreeRegister(regExpr);
         }
         else {
