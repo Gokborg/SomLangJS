@@ -85,7 +85,7 @@ export function lex(lines: string[], file_name = "<eval>") : Token[]{
             else if(isAlpha(buf.current)) {
                 const start: number = buf.pos;
                 let word: string = buf.current;
-                while (isAlpha(buf.next())) {
+                while (isAlphaNum(buf.next())) {
                     word += buf.current 
                 }
                 let kind: Kind = Kind.IDENTIFIER;
