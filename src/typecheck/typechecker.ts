@@ -4,10 +4,12 @@ import { ArrayType, NoType, Pointer, Prim, Type } from "../type.ts";
 import { Scopes } from "./scope.ts";
 import { checkCondition, checkExpr } from "./exprchecker.ts";
 import { Constant } from "./constant.ts";
+import { Variable } from "./variable.ts";
 
 export class TypeChecker {
     types = new Map<ast.AstNode, Type>();
     constants = new Map<ast.AstNode, Constant>();
+    variables = new Map<ast.AstNode, Variable>();
     scopes = new Scopes();
 
     constructor(public err: ErrorContext) {
@@ -60,6 +62,10 @@ export class TypeChecker {
         }
         output += "\nConstants:\n"
         for (const [key, value] of this.constants) {
+            output += `${value}: ${key}\n`;
+        }
+        output += "\nVariables:\n"
+        for (const [key, value] of this.variables) {
             output += `${value}: ${key}\n`;
         }
 

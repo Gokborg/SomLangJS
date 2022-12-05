@@ -155,7 +155,7 @@ export class VarPointer implements AstNode {
 
 //Expressions
 //=============================================
-export type Expression = Number | Identifier | BinaryOp | ArrayLiteral | ArrayAccess;
+export type Expression = Number | Identifier | BinaryOp | ArrayLiteral | ArrayAccess | Reference;
 export interface IExpression extends AstNode {}
 
 export class Number implements IExpression {
@@ -224,5 +224,18 @@ export class ArrayAccess implements IExpression {
 
     toString() {
       return `ArrayAccess(${this.array} ${this.index})`;
+    }
+}
+
+export class Reference implements IExpression {
+    declare private _: undefined; // Hack to disable duck typing
+    constructor(public and: Token, public iner: Expression) {}
+
+    get start(): Token {
+        return this.and;
+    }
+
+    toString() {
+      return `&${this.iner}`;
     }
 }

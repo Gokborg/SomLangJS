@@ -1,7 +1,8 @@
 import * as ast from "../ast.ts";
 import { Kind } from "../token.ts";
-import { ArrayType, NoType, Prim, Type } from "../type.ts";
+import { ArrayType, NoType, Pointer, Prim, Type } from "../type.ts";
 import { TypeChecker } from "./typechecker.ts";
+import { Variable } from "./variable.ts";
 
 export function checkCondition(checker: TypeChecker, node: ast.Expression): void {
     checkExpr(checker, node)
@@ -20,18 +21,18 @@ export function checkExpr(checker: TypeChecker, node: ast.Expression): Type {
         return checker.set(node, Prim.UINT);
     } else if (node instanceof ast.Identifier) {
         const variable = checker.scopes.get(node.token.value);
-        console.log(checker.scopes);
         if (!variable) {
-            console.log(checker.scopes);
             checker.err.error(node.token, `Variable is undefined`);
             return checker.set(node, NoType);
         }
-        console.log(variable, node);
+        checker.variables.set(node, variable);
         return checker.set(node, variable.type);
     } else if (node instanceof ast.ArrayLiteral) {
         return checkArrayLiteral(checker, node);
     } else if (node instanceof ast.ArrayAccess) {
         return checkArrayAccess(checker, node);
+    } else if (node instanceof ast.Reference) {
+        return checkReference(checker, node);
     }
     return NoType;
 }
@@ -64,6 +65,16 @@ function checkArrayAccess(checker: TypeChecker, node: ast.ArrayAccess): Type {
         return checker.set(node, array.iner);
     }
     return checker.set(node, NoType);
+}
+
+function checkReference(checker: TypeChecker, node: ast.Reference): Type {
+    checkExpr(checker, node.iner);
+    const variable = checker.variables.get(node.iner);
+    if (!variable) {
+        checker.err.error(node.iner.start, `Expected variable`);
+        return NoType;
+    }
+    return checker.set(node, new Pointer(variable.type));
 }
 
 function checkBinaryOp(checker: TypeChecker, node: ast.BinaryOp): Type {

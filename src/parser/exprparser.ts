@@ -42,6 +42,9 @@ function parseExprL1(parser: Parser) : ast.Expression {
     const current: Token = parser.buf.current;
     parser.buf.next();
     switch(current.kind) {
+        case Kind.AND: {
+            return new ast.Reference(current, parseExprL1(parser));
+        }
         case Kind.NUMBER: { return new ast.Number(current); }
         case Kind.IDENTIFIER: {
             const identifier: ast.Identifier = new ast.Identifier(current);
