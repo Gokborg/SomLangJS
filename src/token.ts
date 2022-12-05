@@ -28,6 +28,9 @@ export const enum Kind {
   COND_GE = "COND_GE",
   COMMA = "COMMA",
   CONSTANT = "CONSTANT",
+  ASM = "ASM",
+  EXCLAMATION = "EXCLAMATION",
+  PERIOD = "PERIOD",
 
   WHITESPACE = "WHITESPACE",
 

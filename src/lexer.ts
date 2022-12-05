@@ -31,6 +31,7 @@ const keywords: Record<string, Kind> = {
     "while": Kind.WHILE,
     "macro": Kind.MACRO,
     "const" : Kind.CONSTANT,
+    "asm" : Kind.ASM,
 }
 
 const symbols : Record<string, Kind> = {
@@ -50,6 +51,8 @@ const symbols : Record<string, Kind> = {
     '[': Kind.OPEN_SQUARE,
     ']': Kind.CLOSE_SQUARE,
     ' ': Kind.WHITESPACE,
+    '!': Kind.EXCLAMATION,
+    '.': Kind.PERIOD,
 }
 
 const double_symbols: Record<string, Kind> = {
