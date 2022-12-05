@@ -14,7 +14,7 @@ export class ArrayType implements IType {
       && this.iner.par_eq(other.iner);
   }
   eq(other: Type): boolean {
-    return other instanceof ArrayType && this.iner.eq(other.iner);
+    return other instanceof ArrayType && this.iner.eq(other.iner) && (this.size === undefined || this.size === other.size);
   }
   toString(): string {
       return `${this.iner.toString()}[${this.size ?? ""}]`;

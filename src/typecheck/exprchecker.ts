@@ -45,8 +45,8 @@ function checkArrayLiteral(checker: TypeChecker, node: ast.ArrayLiteral): Type {
     const type = node.items.length == 0 ? NoType : checkExpr(checker, node.items[0]);
     for (let i = 1; i < node.items.length; i++) {
         const other = checkExpr(checker, node.items[i]);
-        if (type && other !== type) {
-            checker.err.error(node.items[i].start, "Types should match within an array");
+        if (type !== NoType && !other.eq(type)) {
+            checker.err.error(node.items[i].start, `Expected type ${type} but got ${other}, Types should match within an array`);
         }
     }
     if (!type) {
