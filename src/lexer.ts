@@ -44,6 +44,7 @@ const symbols : Record<string, Kind> = {
     '+': Kind.PLUS,
     '-': Kind.MINUS,
     '*': Kind.MULT,
+    '&': Kind.AND,
     '(': Kind.OPEN_PARAN,
     ')': Kind.CLOSE_PARAN,
     ',': Kind.COMMA,

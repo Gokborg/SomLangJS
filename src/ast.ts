@@ -70,8 +70,8 @@ export class MacroDeclaration implements IStatement {
     toString() {
       return `MacroDecl(${this.name} ${this.args.join(", ")};\n${this.body})`;
     }
-  }
-  
+}
+
 export class MacroCall implements IStatement {
     declare private _: undefined; // Hack to disable duck typing
     constructor(public name: Identifier, public args: IExpression[]) {}
@@ -115,7 +115,7 @@ export class Assignment implements IStatement {
     }
 }
 
-export type TypeNode = VarArray | VarType;
+export type TypeNode = VarArray | VarPointer | VarType;
 export class VarType implements AstNode {
     declare private _: undefined; // Hack to disable duck typing
     constructor(public token: Token) {}

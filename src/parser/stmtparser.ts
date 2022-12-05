@@ -12,19 +12,26 @@ import { parseMacroCall } from "./macrocallparser.ts";
 
 export function parseIsVarOrArray(parser: Parser): ast.TypeNode  {
     const typeToken: Token = parser.buf.expect(Kind.IDENTIFIER);
-    switch (parser.buf.current.kind) {
-      case Kind.OPEN_SQUARE: {
-        //console.log(">>>>", parser.buf.current);
-        if (parser.buf.next().eq(Kind.CLOSE_SQUARE)) {
+    let type: ast.TypeNode = new ast.VarType(typeToken);
+    while (true) {
+      switch (parser.buf.current.kind) {
+        case Kind.OPEN_SQUARE: {
+          if (parser.buf.next().eq(Kind.CLOSE_SQUARE)) {
+            parser.buf.next();
+            type = new ast.VarArray(type);
+          } else {
+            const expr = parseExpression(parser);
+            parser.buf.expect(Kind.CLOSE_SQUARE)
+            type = new ast.VarArray(type, expr);
+          }
+        } break
+        case Kind.MULT: {
           parser.buf.next();
-          return new ast.VarArray(new ast.VarType(typeToken));
-        }
-        const expr = parseExpression(parser);
-        parser.buf.expect(Kind.CLOSE_SQUARE)
-        return new ast.VarArray(new ast.VarType(typeToken), expr);
+          type = new ast.VarPointer(type);
+        } break;
+        default: return type;
       }
     }
-    return new ast.VarType(typeToken);
 }
 
 export function parseStatement(parser: Parser) : ast.Statement {

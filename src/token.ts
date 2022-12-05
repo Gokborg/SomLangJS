@@ -9,6 +9,8 @@ export const enum Kind {
   MULT = "MULT",
   DIV = "DIV",
 
+  AND = "AND",
+
   MACROCALL = "MACROCALL",
 
   COMMENT = "COMMENT",

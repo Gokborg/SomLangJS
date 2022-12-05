@@ -1,6 +1,6 @@
 import { ErrorContext } from "../errors.ts";
 import * as ast from "../ast.ts";
-import { ArrayType, NoType, Prim, Type } from "../type.ts";
+import { ArrayType, NoType, Pointer, Prim, Type } from "../type.ts";
 import { Scopes } from "./scope.ts";
 import { checkCondition, checkExpr } from "./exprchecker.ts";
 import { Constant } from "./constant.ts";
@@ -150,7 +150,11 @@ function checkTypeNode(checker: TypeChecker, tree: ast.TypeNode): Type {
         } else {
             return new ArrayType(iner);
         }
+    } else if (tree instanceof ast.VarPointer) {
+        const iner = checkTypeNode(checker, tree.iner);
+        return new Pointer(iner);
     }
+
     return NoType;
 }
 
