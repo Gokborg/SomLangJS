@@ -44,7 +44,7 @@ export const enum Kind {
 
   SEMICOLON = "SEMICOLON",
 
-  NONE = "NONE",
+  EOF = "EOF",
 }
 
 export class Token {

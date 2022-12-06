@@ -20,11 +20,16 @@ export class Parser {
         const ast_nodes: ast.Statement[] = [];
         this.buf.set(tokens);
         while(!this.buf.done) {
+            const before = this.buf.current;
             const statement = parseStatement(this);
             if (statement) {
                 ast_nodes.push(statement);
             }
+            if (this.buf.current === before) {
+                this.buf.next();
+            }
         }
+        this.buf.expect(Kind.EOF);
         return ast_nodes;
     }
 }

@@ -32,7 +32,7 @@ export class TokenBuffer {
     } else { 
       this.done = true
       this.current = new Token(
-        Kind.NONE, this.lastToken.value,
+        Kind.EOF, this.lastToken.value,
         this.lastToken.line, this.lastToken.lineno,
         this.lastToken.start
       )
