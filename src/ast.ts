@@ -81,7 +81,7 @@ export class FunctionArgument {
         return `Arg(${this.type} ${this.name})`;
     }
 }
-  
+
 export class MacroDeclaration implements IStatement {
     declare private _: undefined; // Hack to disable duck typing
     constructor(
@@ -182,7 +182,7 @@ export class VarPointer implements AstNode {
 
 //Expressions
 //=============================================
-export type Expression = Number | Identifier | BinaryOp | ArrayLiteral | ArrayAccess | Reference | Dereference;
+export type Expression = Number | Identifier | BinaryOp | ArrayLiteral | ArrayAccess | Reference | Dereference | FunctionCall;
 export interface IExpression extends AstNode {}
 
 export class Number implements IExpression {
@@ -243,7 +243,7 @@ export class ArrayLiteral implements IExpression {
   
 export class ArrayAccess implements IExpression {
     declare private _: undefined; // Hack to disable duck typing
-    constructor(public array: Identifier, public index: Expression) {}
+    constructor(public array: Expression, public index: Expression) {}
 
     get start(): Token {
         return this.array.start;
@@ -276,6 +276,19 @@ export class Dereference implements IExpression {
     }
 
     toString() {
-      return `*${this.iner}`;
+        return `*${this.iner}`;
+    }
+}
+
+
+export class FunctionCall implements IExpression {
+    declare private _: undefined; // Hack to disable duck typing
+    constructor(public func: Expression, public args: Expression[]){}
+    get start(): Token {
+        return this.func.start;
+    }
+
+    toString() {
+        return `Call(${this.func} (${this.args.join(", ")}))`;
     }
 }

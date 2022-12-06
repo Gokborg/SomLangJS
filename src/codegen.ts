@@ -267,6 +267,10 @@ export class CodeGeneration {
         }
         else if(expr instanceof ast.ArrayAccess) {
             const regIndex: number = this.genExpression(expr.index);
+            // TODO: allow array excess for other expressions
+            if (!(expr.array instanceof ast.Identifier)) {
+                throw new Error(`array access is not implemented for ${expr.array}`);
+            }
             const memArray: number = this.allocator.hasVariable(expr.array.token.value);
             const regArray: number = this.allocator.getFreeRegister();
             this.asm.putLI(regArray, (memArray+1));
