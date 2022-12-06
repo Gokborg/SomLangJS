@@ -86,5 +86,14 @@ buttons.forEach((button, i) => {
         }
         
     };
-    code.value = `uint a = 10;\nuint* p = &a;\nuint b = *a;`;
+    const url = new URL(document.URL);
+    const srcurl = url.searchParams.get("srcurl");
+    console.log(srcurl);
+    if (srcurl) {
+        fetch(srcurl).then(res => res.text())
+            .then(text => {if(!code.value){code.value = text}});
+    } else {
+        code.value = `uint a = 10;\nuint* p = &a;\nuint b = *p;`;
+    }
+
 }
