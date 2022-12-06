@@ -41,18 +41,23 @@ function parseExprL2(parser: Parser) : ast.Expression {
 
 function parseExprL1(parser: Parser) : ast.Expression {
     const current: Token = parser.buf.current;
-    parser.buf.next();
     switch(current.kind) {
         case Kind.AND: {
+            parser.buf.next();
             return new ast.Reference(current, parseExprL1(parser));
         }
         case Kind.MULT: {
+            parser.buf.next();
             return new ast.Dereference(current, parseExprL1(parser));
         }
-        case Kind.NUMBER: { return new ast.Number(current); }
+        case Kind.NUMBER: {
+            parser.buf.next();
+            return new ast.Number(current);
+        }
         case Kind.IDENTIFIER: {
+            parser.buf.next();
             const identifier: ast.Identifier = new ast.Identifier(current);
-            if(parser.buf.next_if(Kind.OPEN_SQUARE)) {
+            if (parser.buf.next_if(Kind.OPEN_SQUARE)) {
                 const expr: ast.Expression = parseExpression(parser); 
                 parser.buf.expect(Kind.CLOSE_SQUARE);
                 return new ast.ArrayAccess(identifier, expr);
@@ -60,9 +65,11 @@ function parseExprL1(parser: Parser) : ast.Expression {
             return identifier;
         }
         case Kind.OPEN_SQUARE: {
+            parser.buf.next();
             return new ast.ArrayLiteral(current, parseList(parser, Kind.CLOSE_SQUARE, Kind.COMMA, parseExpression));
         }
         case Kind.OPEN_PARAN: {
+            parser.buf.next();
             const expr: ast.Expression = parseExpression(parser);
             parser.buf.expect(Kind.CLOSE_PARAN);
             return expr;
