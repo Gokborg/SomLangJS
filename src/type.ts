@@ -39,12 +39,12 @@ export class Prim implements IType {
 
   }
   par_eq(other: Type): boolean {
-    return this === Prim.ERROR || this.eq(other);
+    return this === Prim.NoType || this.eq(other);
   }
   eq(other: Type): boolean {
     return this === other;
   }
-  static ERROR = new Prim("ERROR");
+  static NoType = new Prim("NOTYPE");
   static UINT = new Prim("UINT");
   static CHAR = new Prim("CHAR");
   static BOOL = new Prim("BOOL");
@@ -55,5 +55,5 @@ export class Prim implements IType {
 }
 
 
-export const NoType = Prim.ERROR;
+export const NoType = Prim.NoType;
 export type NoType = typeof NoType;

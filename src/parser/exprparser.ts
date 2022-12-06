@@ -1,6 +1,7 @@
 import * as ast from "../ast.ts";
 import { Kind, Token } from "../token.ts";
 import { Parser } from "../parser.ts";
+import { parseList } from "./listparser.ts";
 
 export function parseExpression(parser: Parser) {
     return genericParseBinOp(
@@ -59,17 +60,7 @@ function parseExprL1(parser: Parser) : ast.Expression {
             return identifier;
         }
         case Kind.OPEN_SQUARE: {
-            const items: ast.Expression[] = [];
-            if(parser.buf.next_if(Kind.CLOSE_SQUARE)) {
-              return new ast.ArrayLiteral(current, items);
-            }
-            items.push(parseExpression(parser));
-            while(!parser.buf.current.eq(Kind.CLOSE_SQUARE)) {
-                parser.buf.expect(Kind.COMMA);
-                items.push(parseExpression(parser));
-            }
-            parser.buf.next();
-            return new ast.ArrayLiteral(current, items);
+            return new ast.ArrayLiteral(current, parseList(parser, Kind.CLOSE_SQUARE, Kind.COMMA, parseExpression));
         }
         case Kind.OPEN_PARAN: {
             const expr: ast.Expression = parseExpression(parser);
