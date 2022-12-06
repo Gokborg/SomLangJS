@@ -50,12 +50,14 @@ export class ErrorContext {
   }
 
   throw(token: Token, msg: string): never {
-    this.print_errors()
-    throw new Error(new Info(token, msg).toString())
+    const info = new Info(token, msg);
+    this.errors.push(info);
+    throw new Error(info.toString())
   }
   throw_msg(msg: string): never {
-    this.print_errors();
-    throw new Error(new Info(undefined, msg).toString());
+    const info = new Info(undefined, msg);
+    this.errors.push(info);
+    throw new Error(info.toString());
   }
 
   error(token: Token, msg: string) {

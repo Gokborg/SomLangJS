@@ -8,7 +8,10 @@ export function parseBody(parser: Parser) : ast.Body{
     parser.buf.expect(Kind.OPEN_BRACE);
     const content: ast.Statement[] = []
     while (!parser.buf.current.eq(Kind.CLOSE_BRACE)) {
-        content.push(parseStatement(parser));
+        const statement = parseStatement(parser);
+        if (statement) {
+            content.push(statement);
+        }
     }
     parser.buf.next();
     return new ast.Body(open, content);

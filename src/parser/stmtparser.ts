@@ -35,7 +35,9 @@ export function parseIsVarOrArray(parser: Parser): ast.TypeNode  {
     }
 }
 
-export function parseStatement(parser: Parser) : ast.Statement {
+export function parseStatement(parser: Parser): undefined | ast.Statement {
+    // TODO: don't throw exceptions in the parser functions
+    try {
     switch (parser.buf.current.kind) {
         case Kind.IF: return parseIfStatement(parser);
         case Kind.WHILE: return parseWhileStatement(parser);
@@ -56,6 +58,9 @@ export function parseStatement(parser: Parser) : ast.Statement {
                 return parseAssignment(parser, typeIdent, type);
             }
         }
-        default: parser.err.throw(parser.buf.current, "")
+        default: parser.err.error(parser.buf.current, "Unexpected token");
+    }
+    } catch(e) {
+
     }
 }
