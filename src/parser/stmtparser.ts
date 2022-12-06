@@ -9,6 +9,7 @@ import { parseWhileStatement } from "./whileparser.ts";
 import { parseExpression } from "./exprparser.ts";
 import { parseMacro } from "./macroparser.ts";
 import { parseMacroCall } from "./macrocallparser.ts";
+import { parseFunction } from "./functionparser.ts";
 
 export function parseIsVarOrArray(parser: Parser): ast.TypeNode  {
     const typeToken: Token = parser.buf.expect(Kind.IDENTIFIER);
@@ -42,14 +43,17 @@ export function parseStatement(parser: Parser) : ast.Statement {
         case Kind.MACROCALL: return parseMacroCall(parser);
         case Kind.OPEN_BRACE: return parseBody(parser);
         case Kind.IDENTIFIER: {
-            const ident = new ast.Identifier(parser.buf.current);
+            const typeIdent = new ast.Identifier(parser.buf.current);
             const type = parseIsVarOrArray(parser);
             if (parser.buf.current.eq(Kind.IDENTIFIER)) {
-                ident.token.kind = Kind.VAR_TYPE;
+                typeIdent.token.kind = Kind.VAR_TYPE;
+                if (parser.buf.peek(1).kind === Kind.OPEN_PARAN) {
+                    return parseFunction(parser, type);
+                }
                 return parseDeclaration(parser, type);
             }
             else {
-                return parseAssignment(parser, ident, type);
+                return parseAssignment(parser, typeIdent, type);
             }
         }
         default: parser.err.throw(parser.buf.current, "")

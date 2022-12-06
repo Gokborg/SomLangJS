@@ -7,7 +7,7 @@ export interface AstNode {
 
 //Statements
 //=============================================
-export type Statement = Body | IfStatement | WhileStatement
+export type Statement = Body | IfStatement | WhileStatement | FunctionDeclaration
     | MacroDeclaration | MacroCall | Declaration | Assignment;
 
 export interface IStatement extends AstNode {}
@@ -52,6 +52,33 @@ export class WhileStatement implements IStatement {
 
     toString() {
       return `While(\n\t${this.condition} \n\t${this.body})`;
+    }
+}
+
+export class FunctionDeclaration implements IStatement {
+    declare private _: undefined; // Hack to disable duck typing
+    constructor(
+        public type: TypeNode,
+        public name: Identifier,
+        public args: FunctionArgument[],
+        public body: Body
+    ) {}
+
+    get start(): Token {
+        return this.name.start;
+    }
+
+    toString() {
+      return `Function(${this.type} ${this.name} (${this.args.join(", ")}) ${this.body})`;
+    }
+}
+
+export class FunctionArgument {
+    declare private _: undefined; // Hack to disable duck typing
+    constructor (public type: TypeNode, public name: Identifier) {}
+
+    toString() {
+        return `Arg(${this.type} ${this.name})`;
     }
 }
   
