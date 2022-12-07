@@ -246,16 +246,20 @@ export class CodeGeneration {
     }
 
     genAsmStatement(asmStatement: ast.AsmStatement) {
-        this.genAsmBody(asmStatement.body);
+        const varArgs: string[] = [];
+        for(const arg of asmStatement.args) {
+            varArgs.push(arg.token.value);
+        }
+        this.genAsmBody(asmStatement.body, varArgs);
     }
 
-    genAsmBody(body: ast.AsmBody) {
+    genAsmBody(body: ast.AsmBody, varArgs: string[]) {
         for(const asmInstr of body.content) {
-            this.genAsmInstruction(asmInstr);
+            this.genAsmInstruction(asmInstr, varArgs);
         }
     }
 
-    genAsmInstruction(asmInstr: ast.AsmInstruction) {
+    genAsmInstruction(asmInstr: ast.AsmInstruction, varArgs: string[]) {
         //TODO: Use JS voodoo to make this smaller
         function getRegArg(index: number) : number {
             const regExpression: ast.Expression =  asmInstr.args[index];
@@ -268,7 +272,7 @@ export class CodeGeneration {
         function getMemArg(allocator: Allocator, index: number) : number {
             const memExpression: ast.Expression = asmInstr.args[index];
             if(memExpression instanceof ast.AsmMemory) {
-                if(memExpression.token.eq(Kind.IDENTIFIER)) {
+                if(memExpression.token.eq(Kind.IDENTIFIER) && varArgs.includes(memExpression.token.value)) {
                     //variable
                     return allocator.hasVariable(memExpression.token.value);
                 }
