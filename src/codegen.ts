@@ -42,10 +42,12 @@ export class Asm {
     putLABEL(label: string) {
         this.instrs.push(label);
     }
-    putOUT(reg: number, output: number) {
-        this.instrs.push("OUT R" + reg + " " + output);
+    putOUT(port: number, reg: number) {
+        this.instrs.push("OUT " + port + " R" + reg);
     }
-
+    putIN(reg: number, port: number) {
+        this.instrs.push("IN R" + reg + " " + port);
+    }
     putJMP(label: string) {
         this.instrs.push("JMP " + label);
     }
@@ -308,8 +310,12 @@ export class CodeGeneration {
                 this.asm.putDIV(getRegArg(0), getRegArg(1), getRegArg(2))
                 break;
             }
+            case "IN" : {
+                this.asm.putIN(getRegArg(0), getNumArg(1));
+                break;
+            }
             case "OUT": {
-                this.asm.putOUT(getRegArg(0), getNumArg(1));
+                this.asm.putOUT(getNumArg(0), getRegArg(1));
                 break;
             }
             case "IMM" : {

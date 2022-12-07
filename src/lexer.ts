@@ -33,6 +33,7 @@ const asmInstructions: string[] = [
     "STR",
     "IMM",
     "OUT",
+    "IN",
 ]
 
 const keywords: Record<string, Kind> = {
