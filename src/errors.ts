@@ -48,6 +48,9 @@ export class ErrorContext {
   has_error() {
     return this.errors.length > 0;
   }
+  has_warning() {
+    return this.errors.length > 0 || this.warnings.length > 0;
+  }
 
   throw(token: Token, msg: string): never {
     const info = new Info(token, msg);
@@ -90,15 +93,15 @@ export class ErrorContext {
     if (this.warnings.length > 0) {
       messages += "[WARNINGS]:\n"
     }
-    for (const error of this.warnings) {
-      messages += error.toString() + "\n";
+    for (const warning of this.warnings) {
+      messages += warning.toString() + "\n";
     }
 
-    if (this.warnings.length > 0) {
+    if (this.infos.length > 0) {
       messages += "[INFO]:\n"
     }
-    for (const error of this.infos) {
-      messages += error.toString() + "\n";
+    for (const info of this.infos) {
+      messages += info.toString() + "\n";
     }
 
     return messages

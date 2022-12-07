@@ -10,6 +10,16 @@ export class TokenBuffer {
   public lastToken!: Token;
   public done!: boolean;
 
+  store(): number {
+    return this.pos;
+  }
+  restore(pos: number) {
+    this.pos = pos;
+    this.current = this.content[pos];
+    this.lastToken = pos > 1 ? this.content[pos-1] : this.current;
+    this.done = pos >= this.content.length;
+  }
+
   set(content: Token[]) {
     this.pos = 0;
     this.done = false;

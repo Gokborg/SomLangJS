@@ -18,6 +18,7 @@ export class TypeChecker {
         this.scopes.put_type("uint", Prim.UINT);
         this.scopes.put_type("bool", Prim.BOOL);
         this.scopes.put_type("char", Prim.CHAR);
+        this.scopes.put_type("void", Prim.VOID);
     }
 
 
@@ -133,6 +134,11 @@ function checkStatement(checker: TypeChecker, node: ast.Statement) {
             return
         }
         checker.expect(node.expr, func.type.ret);
+    } else if (node instanceof ast.ExpressionStatement) {
+        const type = checkExpr(checker, node.expr);
+        if (!type.par_eq(Prim.VOID)) {
+            checker.err.warn(node.expr.start, "Expression result ignored");
+        }
     }
 }
 

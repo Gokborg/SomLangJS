@@ -51,7 +51,7 @@ export function checkExpr(checker: TypeChecker, node: ast.Expression): Type {
                 checker.err.error(node.start, `Expected ${type.args.length} arguments but got ${node.args.length}`);
             }
         }
-
+        return checker.set(node, type.ret);
     }
     const a: never = node;
     return NoType;

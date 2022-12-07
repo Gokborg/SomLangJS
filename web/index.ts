@@ -41,7 +41,7 @@ buttons.forEach((button, i) => {
         errorOutput.textContent = "";
         lexOutput.textContent = "";
         parseOutput.textContent = "";
-        error_button.classList.remove("error")
+        error_button.classList.remove("error", "warning")
         let tokens: Token[] = [];
         try {
         if (code.value.length < 1) {
@@ -71,9 +71,11 @@ buttons.forEach((button, i) => {
         const asm = codegen.gen(parseResults);
         codegenOutput.textContent = asm.toString();
 
+        errorOutput.textContent = parser.err.toString();
         if (parser.err.has_error()) {
-            errorOutput.textContent = parser.err.toString();
             error_button.classList.add("error");
+        } else if (parser.err.has_warning()) {
+            error_button.classList.add("warning");
         }
         return results;
 

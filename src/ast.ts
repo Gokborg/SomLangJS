@@ -8,10 +8,16 @@ export interface AstNode {
 //Statements
 //=============================================
 export type Statement = Body | IfStatement | WhileStatement | FunctionDeclaration | DerefAssignment | ReturnStatement
-    | MacroDeclaration | MacroCall | Declaration | Assignment | AsmStatement | AsmInstruction | AsmBody;
+    | MacroDeclaration | MacroCall | Declaration | Assignment | AsmStatement | AsmInstruction | AsmBody | ExpressionStatement;
 
 export interface IStatement extends AstNode {}
 
+export class ExpressionStatement implements IStatement {
+    constructor(public expr: Expression) {}
+    get start(): Token {
+        return this.expr.start;
+    }
+}
 export class AsmBody implements IStatement {
     declare private _: undefined; //Hack to disable duck typing
     constructor(private open: Token, public content: AsmInstruction[]) {}

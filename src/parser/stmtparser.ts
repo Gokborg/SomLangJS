@@ -12,6 +12,7 @@ import { parseMacroCall } from "./macrocallparser.ts";
 import { parseFunction } from "./functionparser.ts";
 import { parseAsmStatement } from "./asmparser.ts";
 import { parseAsmInstruction } from "./asminstrparser.ts";
+import { parseList } from "./listparser.ts";
 
 export function parseIsVarOrArray(parser: Parser): ast.TypeNode  {
     const typeToken: Token = parser.buf.expect(Kind.IDENTIFIER);
@@ -56,6 +57,7 @@ export function parseStatement(parser: Parser): undefined | ast.Statement {
             return new ast.ReturnStatement(ret, expr);
         }
         case Kind.IDENTIFIER: {
+            const start = parser.buf.store();
             const typeIdent = new ast.Identifier(parser.buf.current);
             const type = parseIsVarOrArray(parser);
             if (parser.buf.current.eq(Kind.IDENTIFIER)) {
@@ -64,9 +66,13 @@ export function parseStatement(parser: Parser): undefined | ast.Statement {
                     return parseFunction(parser, type);
                 }
                 return parseDeclaration(parser, type);
-            }
-            else {
+            } else if (parser.buf.current.eq(Kind.EQUAL)) {
                 return parseAssignment(parser, typeIdent, type);
+            } else {
+                parser.buf.restore(start);
+                const expr = parseExpression(parser);
+                parser.buf.expect(Kind.SEMICOLON);
+                return new ast.ExpressionStatement(expr);
             }
         }
         default: parser.err.error(parser.buf.current, "Unexpected token");

@@ -20,6 +20,7 @@ export class Prim implements IType {
   static UINT = new Prim("UINT");
   static CHAR = new Prim("CHAR");
   static BOOL = new Prim("BOOL");
+  static VOID = new Prim("VOID");
 
   toString(): string {
     return this.name;
