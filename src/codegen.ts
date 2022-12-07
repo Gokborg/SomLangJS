@@ -347,7 +347,7 @@ export class CodeGeneration {
         return arrayItemsMemory[0];
     }
 
-    genExpression(expr: ast.Expression) : number{
+    genExpression(expr: ast.Expression) : number {
         if(expr instanceof ast.Number) {
             const reg: number = this.allocator.getFreeRegister();
             this.asm.putLI(reg, parseInt(expr.token.value, 10))
@@ -358,6 +358,32 @@ export class CodeGeneration {
             const reg: number = this.allocator.getFreeRegister();
             this.asm.putLOAD(reg, memAddr);
             return reg;
+        }
+        else if(expr instanceof ast.Dereference) {
+            if(expr.iner instanceof ast.Identifier) {
+                const memAddr: number = this.allocator.hasVariable(expr.iner.token.value);
+                const reg: number = this.allocator.getFreeRegister();
+                const varReg: number = this.allocator.getFreeRegister();
+                this.asm.putLOAD(reg, memAddr);
+                this.asm.putLOADWITHREG(varReg, reg);
+                this.allocator.setFreeRegister(reg);
+                return varReg; 
+            }
+            else {
+                return -1;
+            }
+        }
+        else if(expr instanceof ast.Reference) {
+            //only support for &a rn
+            if(expr.iner instanceof ast.Identifier) {
+                const memAddr: number = this.allocator.hasVariable(expr.iner.token.value);
+                const reg: number = this.allocator.getFreeRegister();
+                this.asm.putLI(reg, memAddr);
+                return reg;
+            }
+            else {
+                return -1;
+            }
         }
         else if(expr instanceof ast.ArrayAccess) {
             const regIndex: number = this.genExpression(expr.index);

@@ -67,11 +67,11 @@ function parseExprL1(parser: Parser) : ast.Expression {
     switch(current.kind) {
         case Kind.AND: {
             parser.buf.next();
-            return new ast.Reference(current, parseExpression(parser));
+            return new ast.Reference(current, parseExprL1(parser));
         }
         case Kind.MULT: {
             parser.buf.next();
-            return new ast.Dereference(current, parseExpression(parser));
+            return new ast.Dereference(current, parseExprL1(parser));
         }
         case Kind.NUMBER: {
             parser.buf.next();

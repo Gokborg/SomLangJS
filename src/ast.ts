@@ -330,7 +330,7 @@ export class Reference implements IExpression {
     }
 
     toString() {
-      return `&${this.iner}`;
+      return `Ref(${this.iner})`;
     }
 }
 
@@ -343,7 +343,7 @@ export class Dereference implements IExpression {
     }
 
     toString() {
-        return `*${this.iner}`;
+        return `Deref(${this.iner})`;
     }
 }
 
