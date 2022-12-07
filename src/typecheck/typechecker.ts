@@ -1,6 +1,6 @@
 import { ErrorContext } from "../errors.ts";
 import * as ast from "../ast.ts";
-import { ArrayType, NoType, Pointer, Prim, Type } from "../type.ts";
+import { ArrayType, FunctionPointer, NoType, Pointer, Prim, Type } from "../type.ts";
 import { Scopes } from "./scope.ts";
 import { checkCondition, checkExpr } from "./exprchecker.ts";
 import { Constant } from "./constant.ts";
@@ -26,12 +26,21 @@ export class TypeChecker {
     }
 
     check(tree: ast.Statement[]) {
+        for (const statement of tree) {
+            collectStatementSymbol(this, statement);
+        }
         for (const node of tree) {
             checkStatement(this, node);
         }
     }
     type(tree: ast.AstNode) {
-        return this.types.get(tree);
+        const type = this.types.get(tree);
+        if (type === undefined) {
+            console.log("no type", tree);
+            this.err.warn(tree.start, `Missing type on node ${tree}`);
+            return this.set(tree, NoType);
+        }
+        return type;
     }
 
     set(tree: ast.AstNode, type: Type): Type {
@@ -40,11 +49,6 @@ export class TypeChecker {
     }
     expect(tree: ast.AstNode, ...types: Type[]): Type {
         const type = this.type(tree);
-        if (type === undefined) {
-            console.log("no type", tree);
-            this.err.warn(tree.start, `Missing type on node ${tree}`);
-            return this.set(tree, NoType);
-        }
         for (const expect of types) {
             if (type.eq(expect)) {
                 return type;
@@ -78,6 +82,18 @@ export class TypeChecker {
     }
 }
 
+function collectStatementSymbol(checker: TypeChecker, node: ast.Statement) {
+    if (node instanceof ast.FunctionDeclaration) {
+        const ret = checkTypeNode(checker, node.type);
+        const args: Type[] = node.args.map(
+            arg => checkTypeNode(checker, arg.type) 
+        );
+        const pointerType = new FunctionPointer(ret, args);
+
+        checker.scopes.put(node.name.token.value, pointerType, node);
+    }
+}
+
 function checkStatement(checker: TypeChecker, node: ast.Statement) {
     if (node instanceof ast.Body) {
         checkBody(checker, node);
@@ -95,12 +111,22 @@ function checkStatement(checker: TypeChecker, node: ast.Statement) {
         checkMacroCall(checker, node);
     } else if (node instanceof ast.DerefAssignment) {
         checkDerefAssignment(checker, node);
+    } else if (node instanceof ast.FunctionDeclaration) {
+        checker.scopes.push();
+        for (const arg of node.args) {
+            checker.scopes.put(arg.name.token.value, checker.type(arg.type), arg);
+        }
+        checkBody(checker, node.body);
+        checker.scopes.pop();
     }
 }
 
 
 function checkBody(checker: TypeChecker, tree: ast.Body) {
     checker.scopes.push();
+    for (const statement of tree.content) {
+        collectStatementSymbol(checker, statement);
+    }
     for (const statement of tree.content) {
         checkStatement(checker, statement);
     }

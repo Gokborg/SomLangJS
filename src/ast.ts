@@ -114,9 +114,12 @@ export class FunctionDeclaration implements IStatement {
     }
 }
 
-export class FunctionArgument {
+export class FunctionArgument implements AstNode {
     declare private _: undefined; // Hack to disable duck typing
     constructor (public type: TypeNode, public name: Identifier) {}
+    get start(): Token {
+        return this.type.start;
+    }
 
     toString() {
         return `Arg(${this.type} ${this.name})`;

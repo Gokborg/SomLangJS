@@ -1,6 +1,6 @@
 import * as ast from "../ast.ts";
 import { Kind } from "../token.ts";
-import { ArrayType, NoType, Pointer, Prim, Type } from "../type.ts";
+import { ArrayType, FunctionPointer, NoType, Pointer, Prim, Type } from "../type.ts";
 import { TypeChecker } from "./typechecker.ts";
 import { Variable } from "./variable.ts";
 
@@ -35,6 +35,23 @@ export function checkExpr(checker: TypeChecker, node: ast.Expression): Type {
         return checkReference(checker, node);
     } else if (node instanceof ast.Dereference) {
         return checkDereference(checker, node);
+    } else if (node instanceof ast.FunctionCall) {
+        const type = checkExpr(checker, node.func);
+        for (const arg of node.args){
+            checkExpr(checker, arg);
+        }
+        if (!(type instanceof FunctionPointer)) {
+            checker.err.error(node.func.start, `Expected function type but got ${type}`);
+            return checker.set(node, NoType);
+        } else {
+            for (let i = 0; i < Math.min(node.args.length, type.args.length); i++) {
+                checker.expect(node.args[i], type.args[i]);
+            }
+            if (node.args.length !== type.args.length) {
+                checker.err.error(node.start, `Expected ${type.args.length} arguments but got ${node.args.length}`);
+            }
+        }
+
     }
     const a: never = node;
     return NoType;

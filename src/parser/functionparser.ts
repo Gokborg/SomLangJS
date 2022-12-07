@@ -17,5 +17,6 @@ export function parseFunction(parser: Parser, type: ast.TypeNode): ast.FunctionD
 function parseFuncArg(parser: Parser) {
     const type = parseIsVarOrArray(parser);
     const name = new ast.Identifier(parser.buf.expect(Kind.IDENTIFIER));
+    type.start.kind = Kind.VAR_TYPE;
     return new ast.FunctionArgument(type, name);
 }

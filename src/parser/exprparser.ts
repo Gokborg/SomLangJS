@@ -49,11 +49,11 @@ export function parseExprL2(parser: Parser): ast.Expression {
             iner = new ast.ArrayAccess(iner, expr);
             continue;
         }
-        if (parser.buf.current.eq(Kind.OPEN_PARAN)) {
+        if (parser.buf.next_if(Kind.OPEN_PARAN)) {
             if (iner instanceof ast.Identifier) {
                 iner.token.kind = Kind.FUNCTION;
             }
-            const args = parseArguments(parser);
+            const args = parseList(parser, Kind.CLOSE_PARAN, Kind.COMMA, parseExpression);
             iner = new ast.FunctionCall(iner, args);
             continue;
         }
