@@ -111,6 +111,16 @@ export class Editor_Window extends HTMLElement {
             this.input.selectionEnd = end;
             this.input_cb();
         }
+        if (event.key === "{") {
+            event.preventDefault();
+            const start = this.input.selectionStart;
+            const end = this.input.selectionEnd;
+            const value = this.input.value;
+            this.input.value = value.slice(0, start) + "{" + value.slice(start, end) + "}" + value.slice(end);
+            this.input.selectionStart = start + 1;
+            this.input.selectionEnd = end + 1;
+            this.input_cb();
+        }
     }
     private input_cb(){
         this.render_lines();
