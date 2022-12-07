@@ -93,6 +93,8 @@ function checkStatement(checker: TypeChecker, node: ast.Statement) {
         checkMacroDeclaration(checker, node);
     } else if (node instanceof ast.MacroCall) {
         checkMacroCall(checker, node);
+    } else if (node instanceof ast.DerefAssignment) {
+        checkDerefAssignment(checker, node);
     }
 }
 
@@ -127,12 +129,28 @@ function checkTarget(checker: TypeChecker, tree: ast.TypeNode, type: Type): Type
         }
     } else if (tree instanceof ast.VarType) {
         return type;
+    } else if (tree instanceof ast.VarPointer) {
+        checker.err.error(tree.start, "Syntax error");
+        return NoType;
     }
+    const a: never = tree;
     return NoType;
 }
 
 function checkAssignment(checker: TypeChecker, tree: ast.Assignment) {
     const type = checkTarget(checker, tree.vartype, checkExpr(checker, tree.name));
+    checkExpr(checker, tree.expr)
+    checker.expect(tree.expr, type);
+}
+
+function checkDerefAssignment(checker: TypeChecker, tree: ast.DerefAssignment) {
+    let type = checkExpr(checker, tree.target);
+    if (!(type instanceof Pointer)) {
+        checker.err.error(tree.target.start, `Expected pointer type but got ${type}`);
+        type = NoType;
+    } else {
+        type = type.iner;
+    }
     checkExpr(checker, tree.expr)
     checker.expect(tree.expr, type);
 }
@@ -166,7 +184,7 @@ function checkTypeNodeR(checker: TypeChecker, tree: ast.TypeNode): Type {
         const iner = checkTypeNodeR(checker, tree.iner);
         return new Pointer(iner);
     }
-
+    const a: never = tree;
     return NoType;
 }
 
