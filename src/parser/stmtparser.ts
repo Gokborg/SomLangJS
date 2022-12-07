@@ -2,7 +2,7 @@ import {Token, Kind} from "../token.ts";
 import * as ast from "../ast.ts";
 import {Parser} from "../parser.ts"
 import {parseDeclaration} from "./decparser.ts";
-import {parseAssignment} from "./assignparser.ts"
+import {parseAssignment, parseDerefAssignment} from "./assignparser.ts"
 import {parseBody} from "./bodyparser.ts";
 import { parseIfStatement } from "./ifparser.ts";
 import { parseWhileStatement } from "./whileparser.ts";
@@ -48,6 +48,7 @@ export function parseStatement(parser: Parser): undefined | ast.Statement {
         case Kind.MACROCALL: return parseMacroCall(parser);
         case Kind.OPEN_BRACE: return parseBody(parser);
         case Kind.ASMINSTR: return parseAsmInstruction(parser);
+        case Kind.MULT: return parseDerefAssignment(parser);
         case Kind.IDENTIFIER: {
             const typeIdent = new ast.Identifier(parser.buf.current);
             const type = parseIsVarOrArray(parser);

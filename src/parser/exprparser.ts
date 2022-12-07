@@ -40,7 +40,7 @@ function parseExprL3(parser: Parser) : ast.Expression {
     );
 }
 
-function parseExprL2(parser: Parser): ast.Expression {
+export function parseExprL2(parser: Parser): ast.Expression {
     let iner = parseExprL1(parser);
     while (true) {
         if (parser.buf.next_if(Kind.OPEN_SQUARE)) {
