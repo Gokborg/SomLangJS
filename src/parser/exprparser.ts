@@ -35,12 +35,12 @@ function parseExprL4(parser: Parser) : ast.Expression {
 function parseExprL3(parser: Parser) : ast.Expression {
     return genericParseBinOp(
         parser,
-        parseExpr2,
+        parseExprL2,
         [Kind.MULT, Kind.DIV]
     );
 }
 
-function parseExpr2(parser: Parser): ast.Expression {
+function parseExprL2(parser: Parser): ast.Expression {
     let iner = parseExprL1(parser);
     while (true) {
         if (parser.buf.next_if(Kind.OPEN_SQUARE)) {
@@ -67,11 +67,11 @@ function parseExprL1(parser: Parser) : ast.Expression {
     switch(current.kind) {
         case Kind.AND: {
             parser.buf.next();
-            return new ast.Reference(current, parseExprL1(parser));
+            return new ast.Reference(current, parseExprL2(parser));
         }
         case Kind.MULT: {
             parser.buf.next();
-            return new ast.Dereference(current, parseExprL1(parser));
+            return new ast.Dereference(current, parseExprL2(parser));
         }
         case Kind.NUMBER: {
             parser.buf.next();
