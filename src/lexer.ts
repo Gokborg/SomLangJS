@@ -43,6 +43,7 @@ const keywords: Record<string, Kind> = {
     "while": Kind.WHILE,
     "macro": Kind.MACRO,
     "const" : Kind.CONSTANT,
+    "return" : Kind.RETURN,
     "asm" : Kind.ASM,
 }
 

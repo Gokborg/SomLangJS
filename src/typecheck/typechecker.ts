@@ -10,6 +10,8 @@ export class TypeChecker {
     types = new Map<ast.AstNode, Type>();
     constants = new Map<ast.AstNode, Constant>();
     variables = new Map<ast.AstNode, Variable>();
+    // TODO: check if a function is actually returned from
+    returns = new Set<ast.AstNode>();
     scopes = new Scopes();
 
     constructor(public err: ErrorContext) {
@@ -36,7 +38,6 @@ export class TypeChecker {
     type(tree: ast.AstNode) {
         const type = this.types.get(tree);
         if (type === undefined) {
-            console.log("no type", tree);
             this.err.warn(tree.start, `Missing type on node ${tree}`);
             return this.set(tree, NoType);
         }
@@ -90,7 +91,8 @@ function collectStatementSymbol(checker: TypeChecker, node: ast.Statement) {
         );
         const pointerType = new FunctionPointer(ret, args);
 
-        checker.scopes.put(node.name.token.value, pointerType, node);
+        const variable = checker.scopes.put(node.name.token.value, pointerType, node);
+        checker.variables.set(node, variable);
     }
 }
 
@@ -112,12 +114,25 @@ function checkStatement(checker: TypeChecker, node: ast.Statement) {
     } else if (node instanceof ast.DerefAssignment) {
         checkDerefAssignment(checker, node);
     } else if (node instanceof ast.FunctionDeclaration) {
-        checker.scopes.push();
+        const func = checker.variables.get(node);
+        if (func === undefined) {
+            checker.err.error(node.start, `Missing variable on ${node}`);
+            return;
+        }
+        checker.scopes.push(func);
         for (const arg of node.args) {
             checker.scopes.put(arg.name.token.value, checker.type(arg.type), arg);
         }
         checkBody(checker, node.body);
         checker.scopes.pop();
+    } else if (node instanceof ast.ReturnStatement) {
+        checkExpr(checker, node.expr);
+        const func = checker.scopes.func;
+        if (!(func?.type instanceof FunctionPointer)) {
+            checker.err.error(node.start, "Can't return outside of a function");
+            return
+        }
+        checker.expect(node.expr, func.type.ret);
     }
 }
 

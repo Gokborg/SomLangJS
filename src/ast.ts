@@ -7,7 +7,7 @@ export interface AstNode {
 
 //Statements
 //=============================================
-export type Statement = Body | IfStatement | WhileStatement | FunctionDeclaration | DerefAssignment
+export type Statement = Body | IfStatement | WhileStatement | FunctionDeclaration | DerefAssignment | ReturnStatement
     | MacroDeclaration | MacroCall | Declaration | Assignment | AsmStatement | AsmInstruction | AsmBody;
 
 export interface IStatement extends AstNode {}
@@ -93,6 +93,18 @@ export class WhileStatement implements IStatement {
 
     toString() {
       return `While(\n\t${this.condition} \n\t${this.body})`;
+    }
+}
+
+export class ReturnStatement implements IStatement {
+    declare private _: undefined; // Hack to disable duck typing
+    constructor(public ret: Token, public expr: Expression){}
+    get start(): Token {
+        return this.ret;
+    }
+
+    toString() {
+        return `Return (${this.expr})`;
     }
 }
 

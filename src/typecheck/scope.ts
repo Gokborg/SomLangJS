@@ -4,6 +4,10 @@ import { Variable } from "./variable.ts";
 export class Scopes {
   top = new Scope();
   scopes: Scope[] = [this.top];
+  get func() {
+    return this.top.func;
+  }
+
   get_top(name: string): undefined | Variable {
     return this.top.get_top(name);
   }
@@ -26,8 +30,8 @@ export class Scopes {
     return this.top.get_type(name);
   }
 
-  push() {
-    this.top = new Scope(this.top);
+  push(func?: Variable) {
+    this.top = new Scope(this.top, func);
     this.scopes.push(this.top);
   }
   pop(): boolean {
@@ -46,7 +50,11 @@ export class Scopes {
 export class Scope {
   variables: Record<string, Variable | undefined> = {}; 
   types: Record<string, Type> = {}
-  constructor(readonly parent?: Scope) {}
+  constructor(readonly parent?: Scope, private _func?: Variable) {}
+
+  get func(): Variable | undefined {
+    return this._func || this.parent?.func;
+  }
 
   get_top(name: string): undefined | Variable {
     return this.variables[name];

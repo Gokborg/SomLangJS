@@ -31,6 +31,7 @@ export const enum Kind {
   COND_GE = "COND_GE",
   COMMA = "COMMA",
   CONSTANT = "CONSTANT",
+  RETURN = "RETURN",
   ASM = "ASM",
   ASMINSTR = "ASMINSTR",
   HASHTAG = "HASHTAG",

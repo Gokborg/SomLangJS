@@ -49,6 +49,12 @@ export function parseStatement(parser: Parser): undefined | ast.Statement {
         case Kind.OPEN_BRACE: return parseBody(parser);
         case Kind.ASMINSTR: return parseAsmInstruction(parser);
         case Kind.MULT: return parseDerefAssignment(parser);
+        case Kind.RETURN: {
+            const ret = parser.buf.expect(Kind.RETURN);
+            const expr = parseExpression(parser);
+            parser.buf.expect(Kind.SEMICOLON);
+            return new ast.ReturnStatement(ret, expr);
+        }
         case Kind.IDENTIFIER: {
             const typeIdent = new ast.Identifier(parser.buf.current);
             const type = parseIsVarOrArray(parser);

@@ -92,7 +92,7 @@ editor-window textarea {
     color: #ff00ff;
 }
 
-.IF, .ELSE, .ELIF, .WHILE, .ASM{
+.IF, .ELSE, .ELIF, .WHILE, .ASM, .RETURN {
     color: #DA70CB;
 }
 
