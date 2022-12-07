@@ -59,7 +59,56 @@ export class Editor_Window extends HTMLElement {
                 const add_count = this.tab_width - (line_offset % this.tab_width) || this.tab_width
                 this.input.value = str_splice(value, start, 0, " ".repeat(add_count));
                 this.input.selectionStart = this.input.selectionEnd = start + add_count;
+            } else {
+                let src = this.input.value;
+                if (event.shiftKey){
+                    foreach_line_selected(src, start, end, (i) => {
+                        const white_width = (regex_end(src, i, /^\s*/) ?? i) - i;
+                        const delete_count = white_width === 0 ? 0 : white_width % this.tab_width || this.tab_width;
+                        if (i < start){start -= delete_count;}
+                        end -= delete_count;
+                        src = str_splice(src, i, delete_count, "");
+                        return src;
+                    });
+                    this.input.value = src;
+                    this.input.selectionStart = start;
+                    this.input.selectionEnd = end;
+                } else {
+                    foreach_line_selected(src, start, end, (i) => {
+                        const white_width = (regex_end(src, i, /^\s*/) ?? i) - i;
+                        const add_count = this.tab_width - (white_width % this.tab_width) || this.tab_width;
+                        if (i < start){start += add_count;}
+                        end += add_count;
+                        src = str_splice(src, i, 0, " ".repeat(add_count));
+                        return src;
+                    });
+                    this.input.value = src;
+                    this.input.selectionStart = start;
+                    this.input.selectionEnd = end;
+                }
             }
+            this.input_cb();
+        } else if (event.key === "/" && event.ctrlKey) {
+            let start = this.input.selectionStart;
+            let end = this.input.selectionEnd;
+            let src = this.input.value;
+            foreach_line_selected(src, start, end, (i) => {
+                const white_end = regex_end(src, i, /^\s*/) ?? i;
+                if (regex_end(src, white_end, /^\/\//) === undefined){
+                    src = str_splice(src, white_end, 0, "// ");
+                    if (i < start){start += 3;}
+                    end += 3;
+                } else {
+                    const delete_count = src[white_end + 2] === " " ? 3 : 2;
+                    src = str_splice(src, white_end, delete_count, "");
+                    if (i < start){start -= delete_count;}
+                    end -= delete_count;
+                }
+                return src;
+            });
+            this.input.value = src;
+            this.input.selectionStart = start;
+            this.input.selectionEnd = end;
             this.input_cb();
         }
     }
@@ -216,4 +265,10 @@ function line_start(string: string, index: number): number {
         }
     }
     return line_start;
+}
+
+function regex_end(src: string, i: number, regex: RegExp): undefined | number {
+    const res = regex.exec(src.substring(i));
+    if (res === null || res.index !== 0){return undefined;}
+    return i + res[0].length;
 }
