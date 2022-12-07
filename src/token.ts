@@ -2,6 +2,7 @@ export const enum Kind {
   VAR_TYPE = "VAR_TYPE",
 
   IDENTIFIER = "IDENTIFIER",
+  FUNCTION = "FUNCTION",
   NUMBER = "NUMBER",
   EQUAL = "EQUAL",
   PLUS = "PLUS",

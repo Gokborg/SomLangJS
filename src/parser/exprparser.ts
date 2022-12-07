@@ -50,6 +50,9 @@ function parseExpr2(parser: Parser): ast.Expression {
             continue;
         }
         if (parser.buf.current.eq(Kind.OPEN_PARAN)) {
+            if (iner instanceof ast.Identifier) {
+                iner.token.kind = Kind.FUNCTION;
+            }
             const args = parseArguments(parser);
             iner = new ast.FunctionCall(iner, args);
             continue;

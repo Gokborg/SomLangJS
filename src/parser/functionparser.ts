@@ -6,8 +6,8 @@ import { parseIsVarOrArray } from "./stmtparser.ts";
 import { parseBody } from "./bodyparser.ts";
 
 export function parseFunction(parser: Parser, type: ast.TypeNode): ast.FunctionDeclaration {
-    console.log(type);
     const name = new ast.Identifier(parser.buf.expect(Kind.IDENTIFIER));
+    name.token.kind = Kind.FUNCTION;
     parser.buf.expect(Kind.OPEN_PARAN);
     const args = parseList(parser, Kind.CLOSE_PARAN, Kind.COMMA, parseFuncArg);
     const body = parseBody(parser);
