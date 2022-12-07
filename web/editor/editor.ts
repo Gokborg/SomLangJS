@@ -139,7 +139,7 @@ export class Editor_Window extends HTMLElement {
         if (event.key === "Backspace" && this.input.selectionStart === this.input.selectionEnd) {
             const start = this.input.selectionStart;
             const value = this.input.value;
-            const start_line = value.substring(0, start).lastIndexOf("\n") + 1;// lastIndexOf(value, "\n", start);
+            const start_line = value.substring(0, start).lastIndexOf("\n") + 1;
             if (!/^ +$/.test(this.value.substring(start_line, start))) {
                 console.log(start_line, start, JSON.stringify(this.value.substring(start_line, start)))
                 break backspace
@@ -152,6 +152,7 @@ export class Editor_Window extends HTMLElement {
             this.input.value = value.slice(0, start_line) + " ".repeat(new_spaces) + value.slice(start);
             this.input.selectionStart = this.input.selectionEnd = start_line + new_spaces;
             event.preventDefault();
+            this.input_cb();
         }
     }
     private input_cb(){
@@ -313,9 +314,4 @@ function regex_end(src: string, i: number, regex: RegExp): undefined | number {
     const res = regex.exec(src.substring(i));
     if (res === null || res.index !== 0){return undefined;}
     return i + res[0].length;
-}
-
-function lastIndexOf(src: string, match: string, i: number): number {
-    const index = src.lastIndexOf(match, i);
-    return index < 0 ? 0 : index;
 }
