@@ -123,7 +123,7 @@ export function lex(lines: string[], file_name = "<eval>") : Token[]{
                     let current: string = buf.current;
                     let symbol_kind: Kind = symbols[current];
                     buf.next();
-                    const double_symbol = buf.current + current;
+                    const double_symbol = current + buf.current;
                     if (double_symbol in double_symbols) {
                         symbol_kind = double_symbols[double_symbol];
                         current = double_symbol;

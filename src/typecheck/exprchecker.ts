@@ -116,7 +116,6 @@ function checkBinaryOp(checker: TypeChecker, node: ast.BinaryOp): Type {
         return checker.set(node, NoType);
     }
     // allow for pointer arithmetic
-    console.log(node.op.kind);
     if ((node.op.kind === Kind.PLUS || node.op.kind === Kind.MINUS) && left instanceof Pointer) {
         checker.expect(node.expr2, Prim.UINT);
         return checker.set(node, left);
