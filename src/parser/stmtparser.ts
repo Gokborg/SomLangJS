@@ -19,18 +19,18 @@ export function parseIsVarOrArray(parser: Parser): ast.TypeNode  {
     while (true) {
       switch (parser.buf.current.kind) {
         case Kind.OPEN_SQUARE: {
-          if (parser.buf.next().eq(Kind.CLOSE_SQUARE)) {
-            parser.buf.next();
-            type = new ast.VarArray(type);
-          } else {
-            const expr = parseExpression(parser);
-            parser.buf.expect(Kind.CLOSE_SQUARE)
-            type = new ast.VarArray(type, expr);
-          }
+            if (parser.buf.next().eq(Kind.CLOSE_SQUARE)) {
+                parser.buf.next();
+                type = new ast.VarArray(type);
+            } else {
+                const expr = parseExpression(parser);
+                parser.buf.expect(Kind.CLOSE_SQUARE)
+                type = new ast.VarArray(type, expr);
+            }
         } break
         case Kind.MULT: {
-          parser.buf.next();
-          type = new ast.VarPointer(type);
+            parser.buf.next();
+            type = new ast.VarPointer(type);
         } break;
         default: return type;
       }
