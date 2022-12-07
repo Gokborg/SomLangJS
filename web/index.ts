@@ -37,6 +37,7 @@ buttons.forEach((button, i) => {
     // code.oninput = oninput;
     code.get_tokens = oninput;
     function oninput(src: string) {
+        localStorage.setItem("som", src);
         errorOutput.textContent = "";
         lexOutput.textContent = "";
         parseOutput.textContent = "";
@@ -86,13 +87,17 @@ buttons.forEach((button, i) => {
         }
         
     };
+    const file = localStorage.getItem("som");
+    if (file) {
+        code.value = file;
+    }
+
     const url = new URL(document.URL);
     const srcurl = url.searchParams.get("srcurl");
-    console.log(srcurl);
     if (srcurl) {
         fetch(srcurl).then(res => res.text())
             .then(text => {if(!code.value){code.value = text}});
-    } else {
+    } else if (!code.value) {
         code.value = `uint a = 10;\nuint* p = &a;\nuint b = *p;`;
     }
 
