@@ -121,6 +121,20 @@ export class Editor_Window extends HTMLElement {
             this.input.selectionEnd = end + 1;
             this.input_cb();
         }
+        if (event.key === "Enter" && this.input.selectionStart === this.input.selectionEnd) {
+            event.preventDefault();
+            const start = this.input.selectionStart;
+            const value = this.input.value;
+            let indent = 0;
+            for (let i = 0; i < start; i++) {
+                if (value[i] === '{'){indent++;}
+                if (value[i] === '}'){indent--;}
+            }
+            this.input.value = value.slice(0, start) + "\n" + " ".repeat(indent * this.tab_width) 
+                + (value[start] === "}" ? "\n" + " ".repeat((indent-1) * this.tab_width) : "") + value.slice(start);
+            this.input.selectionStart = this.input.selectionEnd = start + 1 + this.tab_width;
+            this.input_cb();
+        }
     }
     private input_cb(){
         this.render_lines();
