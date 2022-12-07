@@ -96,9 +96,15 @@ function checkBinaryOp(checker: TypeChecker, node: ast.BinaryOp): Type {
     const left = checkExpr(checker, node.expr1);
     const right = checkExpr(checker, node.expr2);
     if (left === NoType || right === NoType) {
-        console.log(">>>>", checker.type(node.expr1), left, node.expr2, right);
         return checker.set(node, NoType);
     }
+    // allow for pointer arithmetic
+    console.log(node.op.kind);
+    if ((node.op.kind === Kind.PLUS || node.op.kind === Kind.MINUS) && left instanceof Pointer) {
+        checker.expect(node.expr2, Prim.UINT);
+        return checker.set(node, left);
+    }
+
     if (left !== right) {
         checker.err.error(node.op, `Type ${left} and ${right} do not match`);
         return checker.set(node, NoType);
