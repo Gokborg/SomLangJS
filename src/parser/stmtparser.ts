@@ -10,6 +10,8 @@ import { parseExpression } from "./exprparser.ts";
 import { parseMacro } from "./macroparser.ts";
 import { parseMacroCall } from "./macrocallparser.ts";
 import { parseFunction } from "./functionparser.ts";
+import { parseAsmStatement } from "./asmparser.ts";
+import { parseAsmInstruction } from "./asminstrparser.ts";
 
 export function parseIsVarOrArray(parser: Parser): ast.TypeNode  {
     const typeToken: Token = parser.buf.expect(Kind.IDENTIFIER);
@@ -41,9 +43,11 @@ export function parseStatement(parser: Parser): undefined | ast.Statement {
     switch (parser.buf.current.kind) {
         case Kind.IF: return parseIfStatement(parser);
         case Kind.WHILE: return parseWhileStatement(parser);
+        case Kind.ASM: return parseAsmStatement(parser);
         case Kind.MACRO: return parseMacro(parser);
         case Kind.MACROCALL: return parseMacroCall(parser);
         case Kind.OPEN_BRACE: return parseBody(parser);
+        case Kind.ASMINSTR: return parseAsmInstruction(parser);
         case Kind.IDENTIFIER: {
             const typeIdent = new ast.Identifier(parser.buf.current);
             const type = parseIsVarOrArray(parser);

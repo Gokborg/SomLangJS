@@ -24,6 +24,17 @@ class Buffer {
     }
 }
 
+const asmInstructions: string[] = [
+    "ADD",
+    "SUB",
+    "MULT",
+    "DIV",
+    "LOD",
+    "STR",
+    "IMM",
+    "OUT",
+]
+
 const keywords: Record<string, Kind> = {
     "if": Kind.IF,
     "else": Kind.ELSE,
@@ -54,6 +65,7 @@ const symbols : Record<string, Kind> = {
     ' ': Kind.WHITESPACE,
     '!': Kind.EXCLAMATION,
     '.': Kind.PERIOD,
+    '#': Kind.HASHTAG,
 }
 
 const double_symbols: Record<string, Kind> = {
@@ -95,6 +107,9 @@ export function lex(lines: string[], file_name = "<eval>") : Token[]{
                 if (buf.current === "!") {
                     buf.next();
                     kind = Kind.MACROCALL;
+                }
+                if (asmInstructions.includes(word)) {
+                    kind = Kind.ASMINSTR;
                 }
                 tokens.push(
                     new Token(kind, word, line, lineno, start)

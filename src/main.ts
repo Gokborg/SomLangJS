@@ -4,7 +4,11 @@ import {Token} from "./token.ts"
 import { Parser } from "./parser.ts";
 import { CodeGeneration, Asm } from "./codegen.ts";
 const tokens = lex(`
-
+uint a = 3;
+uint b = 1;
+asm a, b{
+LOD R1 #a
+}
 `.split("\n"));
 console.log(tokens);
 const parser: Parser = new Parser();

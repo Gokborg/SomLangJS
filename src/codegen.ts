@@ -1,4 +1,5 @@
 import * as ast from "./ast.ts";
+import { Kind } from "./token.ts";
 
 export class Asm {
     instrs: string[];
@@ -41,6 +42,10 @@ export class Asm {
     putLABEL(label: string) {
         this.instrs.push(label);
     }
+    putOUT(reg: number, output: number) {
+        this.instrs.push("OUT R" + reg + " " + output);
+    }
+
     putJMP(label: string) {
         this.instrs.push("JMP " + label);
     }
@@ -76,6 +81,9 @@ export class CodeGeneration {
         }
         else if(statement instanceof ast.WhileStatement) {
             this.genWhileStatement(statement);
+        }
+        else if(statement instanceof ast.AsmStatement) {
+            this.genAsmStatement(statement);
         }
         else {
             //error - No code gen for this statement
@@ -234,6 +242,84 @@ export class CodeGeneration {
             const reg: number = this.genExpression(assign.expr);
             this.asm.putSTORE(addr, reg);
             this.allocator.setFreeRegister(reg);
+        }
+    }
+
+    genAsmStatement(asmStatement: ast.AsmStatement) {
+        this.genAsmBody(asmStatement.body);
+    }
+
+    genAsmBody(body: ast.AsmBody) {
+        for(const asmInstr of body.content) {
+            this.genAsmInstruction(asmInstr);
+        }
+    }
+
+    genAsmInstruction(asmInstr: ast.AsmInstruction) {
+        //TODO: Use JS voodoo to make this smaller
+        function getRegArg(index: number) : number {
+            const regExpression: ast.Expression =  asmInstr.args[index];
+            if(regExpression instanceof ast.AsmRegister) {
+                return regExpression.reg;
+            }
+            //throw error
+            return -1;
+        }
+        function getMemArg(allocator: Allocator, index: number) : number {
+            const memExpression: ast.Expression = asmInstr.args[index];
+            if(memExpression instanceof ast.AsmMemory) {
+                if(memExpression.token.eq(Kind.IDENTIFIER)) {
+                    //variable
+                    return allocator.hasVariable(memExpression.token.value);
+                }
+                else {
+                    return parseInt(memExpression.token.value, 10);
+                }
+            }
+            //throw error
+            return -1;
+        }
+        function getNumArg(index: number) : number {
+            if(asmInstr.args[index] instanceof ast.Number) {
+                return parseInt(asmInstr.args[index].start.value, 10);
+            }
+            //throw error
+            return -1;
+        }
+        const args: ast.Expression[] = asmInstr.args;
+        switch(asmInstr.instr.token.value) {
+            case "ADD": {
+                this.asm.putADD(getRegArg(0), getRegArg(1), getRegArg(2))
+                break;
+            }
+            case "SUB": {
+                this.asm.putSUB(getRegArg(0), getRegArg(1), getRegArg(2))
+                break;
+            }
+            case "MULT": {
+                this.asm.putMULT(getRegArg(0), getRegArg(1), getRegArg(2))
+                break;
+            }
+            case "DIV": {
+                this.asm.putDIV(getRegArg(0), getRegArg(1), getRegArg(2))
+                break;
+            }
+            case "OUT": {
+                this.asm.putOUT(getRegArg(0), getNumArg(1));
+                break;
+            }
+            //TODO: add support for using regs as an address
+            case "LOD": {
+                this.asm.putLOAD(getRegArg(0), getMemArg(this.allocator, 1));
+                break;
+            }
+            case "STR": {
+                this.asm.putSTORE(getMemArg(this.allocator, 0), getRegArg(1));
+                break;
+            }
+            default: {
+                //unknown instr throw error
+            }
         }
     }
 

@@ -75,6 +75,10 @@ editor-window textarea {
     color: #4EC9B0;
 }
 
+.ASMINSTR {
+    color: #90EE90;
+}
+
 .EQUAL, .PLUS, .MINUS, .MULT, .DIV,
 .OPEN_BRACE, .CLOSE_BRACE,
 .OPEN_PARAN, .CLOSE_PARAN,
@@ -88,7 +92,7 @@ editor-window textarea {
     color: #ff00ff;
 }
 
-.IF, .ELSE, .ELIF, .WHILE {
+.IF, .ELSE, .ELIF, .WHILE, .ASM{
     color: #DA70CB;
 }
 

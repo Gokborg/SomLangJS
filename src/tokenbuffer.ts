@@ -20,6 +20,15 @@ export class TokenBuffer {
     this.lastToken = this.content[this.pos];
   }
 
+  //I added cause of asmparser.ts, check it out see if u can think of something
+  back() {
+    if(this.pos > 0) {
+      this.pos--;
+    }
+    this.current = this.content[this.pos];
+    this.lastToken = this.current;
+  }
+
   peek(amt: number) : Token {
     return this.content[this.pos + amt];
   }

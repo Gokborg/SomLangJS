@@ -8,9 +8,50 @@ export interface AstNode {
 //Statements
 //=============================================
 export type Statement = Body | IfStatement | WhileStatement | FunctionDeclaration
-    | MacroDeclaration | MacroCall | Declaration | Assignment;
+    | MacroDeclaration | MacroCall | Declaration | Assignment | AsmStatement | AsmInstruction | AsmBody;
 
 export interface IStatement extends AstNode {}
+
+export class AsmBody implements IStatement {
+    declare private _: undefined; //Hack to disable duck typing
+    constructor(private open: Token, public content: AsmInstruction[]) {}
+
+    get start(): Token {
+        return this.open;
+    }
+
+    toString() {
+        return `AsmBody {\n${this.content.join("\n")}\n}`
+    }
+}
+//this would be like ADD R0, R1, R0
+export class AsmInstruction implements IStatement {
+    declare private _: undefined; //Hack to disable duck typing
+    constructor(private open: Token, public instr: Identifier, public args: Expression[]) {}
+
+    get start(): Token {
+        return this.instr.start;
+    }
+
+    toString() {
+      return `AsmInstruction(${this.instr} ${this.args})`;
+    }
+    
+}
+
+//this would be like asm {}
+export class AsmStatement implements IStatement {
+    declare private _: undefined; //Hack to disable duck typing
+    constructor(private open: Token, public args: Identifier[], public body: AsmBody) {}
+
+    get start(): Token {
+        return this.open;
+    }
+
+    toString() {
+      return `AsmStatement(\n\t${this.args}\n\t${this.body})`;
+    }
+}
 
 export class Body implements IStatement {
     declare private _: undefined; // Hack to disable duck typing
@@ -182,8 +223,34 @@ export class VarPointer implements AstNode {
 
 //Expressions
 //=============================================
-export type Expression = Number | Identifier | BinaryOp | ArrayLiteral | ArrayAccess | Reference | Dereference | FunctionCall;
+export type Expression = Number | Identifier | BinaryOp | ArrayLiteral | ArrayAccess | AsmRegister | AsmMemory | Reference | Dereference | FunctionCall;
 export interface IExpression extends AstNode {}
+
+export class AsmMemory implements IExpression {
+    declare private _: undefined;
+    constructor(public token: Token) {}
+
+    get start(): Token {
+        return this.token;
+    }
+
+    toString() {
+        return `AsmMemory(${this.token})`
+    }
+}
+
+export class AsmRegister implements IExpression {
+    declare private _: undefined; //Hack to disable duck typing
+    constructor(public token: Token, public reg: number) {}
+
+    get start(): Token {
+        return this.token;
+    }
+
+    toString() {
+        return `AsmRegister(${this.token})`
+    }
+}
 
 export class Number implements IExpression {
     declare private _: undefined; // Hack to disable duck typing

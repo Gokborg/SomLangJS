@@ -31,6 +31,9 @@ export const enum Kind {
   COMMA = "COMMA",
   CONSTANT = "CONSTANT",
   ASM = "ASM",
+  ASMINSTR = "ASMINSTR",
+  HASHTAG = "HASHTAG",
+
   EXCLAMATION = "EXCLAMATION",
   PERIOD = "PERIOD",
 
