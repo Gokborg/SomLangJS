@@ -2,13 +2,10 @@ import {lex} from "./lexer.ts"
 import {Token} from "./token.ts"
 
 import { Parser } from "./parser.ts";
-import { CodeGeneration, Asm } from "./codegen.ts";
+import { CodeGeneration } from "./codegen/bettercodegen.ts";
+import { Asm } from "./codegen/asm.ts";
 const tokens = lex(`
-uint a = 3;
-uint b = 1;
-asm a, b{
-LOD R1 #a
-}
+uint a = 1;
 `.split("\n"));
 console.log(tokens);
 const parser: Parser = new Parser();

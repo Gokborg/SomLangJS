@@ -488,7 +488,7 @@ class Allocator {
         }
         return -1;
     }
-
+    
     addVariable(varName: string) : number {
         if(varName in this.varToMemory) {
             return this.varToMemory[varName];
