@@ -132,7 +132,7 @@ export class Editor_Window extends HTMLElement {
             }
             this.input.value = value.slice(0, start) + "\n" + " ".repeat(indent * this.tab_width) 
                 + (value[start] === "}" ? "\n" + " ".repeat((indent-1) * this.tab_width) : "") + value.slice(start);
-            this.input.selectionStart = this.input.selectionEnd = start + 1 + this.tab_width;
+            this.input.selectionStart = this.input.selectionEnd = start + 1 + this.tab_width * indent;
             this.input_cb();
         }
     }
