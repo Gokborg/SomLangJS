@@ -308,6 +308,10 @@ export class CodeGeneration {
                 this.asm.putOUT(getRegArg(0), getNumArg(1));
                 break;
             }
+            case "IMM" : {
+                this.asm.putLI(getRegArg(0), getNumArg(1));
+                break;
+            }
             //TODO: add support for using regs as an address
             case "LOD": {
                 this.asm.putLOAD(getRegArg(0), getMemArg(this.allocator, 1));
