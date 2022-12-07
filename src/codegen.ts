@@ -381,6 +381,18 @@ export class CodeGeneration {
                 this.asm.putLI(reg, memAddr);
                 return reg;
             }
+            else if(expr.iner instanceof ast.ArrayAccess) {
+                const regIndex: number = this.genExpression(expr.iner.index);
+                if (!(expr.iner.array instanceof ast.Identifier)) {
+                    throw new Error(`array access is not implemented for ${expr.iner.array}`);
+                }
+                const memArray: number = this.allocator.hasVariable(expr.iner.array.token.value);
+                const regArray: number = this.allocator.getFreeRegister();
+                this.asm.putLI(regArray, memArray);
+                this.asm.putADD(regIndex, regArray, regIndex);
+                this.allocator.setFreeRegister(regArray);
+                return regIndex;
+            }
             else {
                 return -1;
             }
@@ -393,7 +405,7 @@ export class CodeGeneration {
             }
             const memArray: number = this.allocator.hasVariable(expr.array.token.value);
             const regArray: number = this.allocator.getFreeRegister();
-            this.asm.putLI(regArray, (memArray+1));
+            this.asm.putLI(regArray, memArray);
             this.asm.putADD(regIndex, regArray, regIndex);
             this.asm.putLOADWITHREG(regIndex, regIndex);
             this.allocator.setFreeRegister(regArray);
