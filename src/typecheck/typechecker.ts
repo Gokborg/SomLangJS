@@ -153,14 +153,25 @@ function checkStatement(checker: TypeChecker, node: ast.Statement) {
 
 
 function checkBody(checker: TypeChecker, tree: ast.Body) {
+    const enum State {
+        NoReturn, Return, Unreachable
+    }
     checker.scopes.push();
     for (const statement of tree.content) {
         collectStatementSymbol(checker, statement);
     }
+    let state = State.NoReturn;
     for (const statement of tree.content) {
         checkStatement(checker, statement);
+        if (state === State.Return) {
+            checker.err.warn(statement.start, "Unreachable code");
+            state = State.Unreachable;
+        }
         if (checker.returns.has(statement)){
-            checker.returns.add(tree)
+            if (state === State.NoReturn) {
+                state = State.Return;
+            }
+            checker.returns.add(tree);
         }
     }
     checker.popScope();
