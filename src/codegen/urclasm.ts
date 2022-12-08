@@ -23,7 +23,7 @@ export class URCLAsm extends Asm {
         this.add("SUB R" + dest + " R" + srcA + " R" + srcB);
     }
     putMULT(dest: number, srcA: number, srcB: number) {
-        this.add("MULT R" + dest + " R" + srcA + " R" + srcB);
+        this.add("MLT R" + dest + " R" + srcA + " R" + srcB);
     }
     putDIV(dest: number, srcA: number, srcB: number) {
         this.add("DIV R" + dest + " R" + srcA + " R" + srcB);
