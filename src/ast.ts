@@ -9,7 +9,7 @@ export function summarize_node(node: AstNode) {
         line = line.substring(0, max_size-3) + "..."
     }
 
-    return `(${node.start.lineno}:${node.start.start}: ${JSON.stringify(line)})`;
+    return `(${node.start.lineno}:${node.start.start}: ${line})`;
 }
 
 export interface AstNode {
