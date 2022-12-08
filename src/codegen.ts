@@ -31,7 +31,7 @@ export class Asm {
         this.instrs.push("SUB R" + dest + " R" + srcA + " R" + srcB);
     }
     putMULT(dest: number, srcA: number, srcB: number) {
-        this.instrs.push("MULT R" + dest + " R" + srcA + " R" + srcB);
+        this.instrs.push("MLT R" + dest + " R" + srcA + " R" + srcB);
     }
     putDIV(dest: number, srcA: number, srcB: number) {
         this.instrs.push("DIV R" + dest + " R" + srcA + " R" + srcB);
