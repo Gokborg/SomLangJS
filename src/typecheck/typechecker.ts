@@ -65,19 +65,24 @@ export class TypeChecker {
     toString() {
         let output = "Types:\n";
         for (const [key, value] of this.types) {
-            output += `${value}: ${key}\n`;
+            output += `${value}: ${ast.summarize_node(key)}\n`;
         }
         output += "\nConstants:\n"
         for (const [key, value] of this.constants) {
-            output += `${value}: ${key}\n`;
+            output += `${value}: ${ast.summarize_node(key)}\n`;
         }
         output += "\nVariables:\n"
         for (const [key, value] of this.variables) {
-            output += `${value.type}: ${key}\n`;
+            output += `${value.type}: ${ast.summarize_node(key)}\n`;
         }
-
+        
         output += "\nScopes:\n";
         output += this.scopes.toString();
+        
+        output += "\nReturns:\n"
+        for (const statement of this.returns) {
+            output += `${ast.summarize_node(statement)}\n`;
+        }
 
         return output;
     }

@@ -1,8 +1,20 @@
 import {Token, Kind} from "./token.ts";
 import { Type } from "./type.ts";
 
+export function summarize_node(node: AstNode) {
+    const max_size = 40;
+    const text = node.toString();
+    let line = text.split("\n")[0].trim();
+    if (line.length > max_size) {
+        line = line.substring(0, max_size-3) + "..."
+    }
+
+    return `(${node.start.lineno}:${node.start.start}: ${JSON.stringify(line)})`;
+}
+
 export interface AstNode {
     readonly start: Token,
+    toString(): string;
 }
 
 //Statements
@@ -17,6 +29,9 @@ export class ExpressionStatement implements IStatement {
     constructor(public expr: Expression) {}
     get start(): Token {
         return this.expr.start;
+    }
+    toString() {
+        return `ExpressionStatement(${this.expr})`;
     }
 }
 export class AsmBody implements IStatement {
@@ -111,7 +126,7 @@ export class ReturnStatement implements IStatement {
     }
 
     toString() {
-        return `Return (${this.expr})`;
+        return `Return(${this.expr})`;
     }
 }
 
