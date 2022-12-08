@@ -13,6 +13,7 @@ export type Statement = Body | IfStatement | WhileStatement | FunctionDeclaratio
 export interface IStatement extends AstNode {}
 
 export class ExpressionStatement implements IStatement {
+    declare private _: undefined; //Hack to disable duck typing
     constructor(public expr: Expression) {}
     get start(): Token {
         return this.expr.start;

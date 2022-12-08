@@ -10,7 +10,6 @@ export class TypeChecker {
     types = new Map<ast.AstNode, Type>();
     constants = new Map<ast.AstNode, Constant>();
     variables = new Map<ast.AstNode, Variable>();
-    // TODO: check if a function is actually returned from
     returns = new Set<ast.AstNode>();
     scopes = new Scopes();
 
@@ -116,7 +115,7 @@ function checkStatement(checker: TypeChecker, node: ast.Statement) {
         checkDerefAssignment(checker, node);
     } else if (node instanceof ast.FunctionDeclaration) {
         const func = checker.variables.get(node);
-        if (func === undefined) {
+        if (!(func?.type instanceof FunctionPointer)) {
             checker.err.error(node.start, `Missing variable on ${node}`);
             return;
         }
@@ -126,6 +125,10 @@ function checkStatement(checker: TypeChecker, node: ast.Statement) {
         }
         checkBody(checker, node.body);
         checker.scopes.pop();
+
+        if (!func.type.ret.eq(Prim.VOID) && !checker.returns.has(node.body)) {
+            checker.err.error(node.name.token, "Function doesn't always return");
+        }
     } else if (node instanceof ast.ReturnStatement) {
         checkExpr(checker, node.expr);
         const func = checker.scopes.func;
@@ -134,6 +137,7 @@ function checkStatement(checker: TypeChecker, node: ast.Statement) {
             return
         }
         checker.expect(node.expr, func.type.ret);
+        checker.returns.add(node);
     } else if (node instanceof ast.ExpressionStatement) {
         const type = checkExpr(checker, node.expr);
         if (!type.par_eq(Prim.VOID)) {
@@ -150,6 +154,9 @@ function checkBody(checker: TypeChecker, tree: ast.Body) {
     }
     for (const statement of tree.content) {
         checkStatement(checker, statement);
+        if (checker.returns.has(statement)){
+            checker.returns.add(tree)
+        }
     }
     checker.popScope();
 }
@@ -160,10 +167,16 @@ function checkIf(checker: TypeChecker, tree: ast.IfStatement) {
     if (tree.child) {
         checkStatement(checker, tree.child);
     }
+    if (tree.child && checker.returns.has(tree.body) && checker.returns.has(tree.child)) {
+        checker.returns.add(tree);
+    }
 }
 function checkWhile(checker: TypeChecker, tree: ast.WhileStatement) {
     checkCondition(checker, tree.condition);
     checkStatement(checker, tree.body);
+    if (checker.returns.has(tree.body)){
+        checker.returns.add(tree);
+    }
 }
 
 function checkTarget(checker: TypeChecker, tree: ast.TypeNode, type: Type): Type {
