@@ -1,7 +1,8 @@
+import { Identifier } from "../src/ast.ts";
 import { CodeGeneration } from "../src/codegen.ts";
 import { lex } from "../src/lexer.ts";
 import { Parser } from "../src/parser.ts";
-import { Token } from "../src/token.ts";
+import { Kind, Token } from "../src/token.ts";
 import { TypeChecker } from "../src/typecheck/typechecker.ts";
 import "./editor/editor.ts";
 import { Editor_Window } from "./editor/editor.ts";
@@ -77,6 +78,32 @@ buttons.forEach((button, i) => {
         } else if (parser.err.has_warning()) {
             error_button.classList.add("warning");
         }
+
+        code.get_symbols = i => {
+            const symbols: Token[] = [];
+            let name: undefined | Token;
+            for (const token of tokens) {
+                const {kind, offset, end_offset} = token;
+                if (kind !== Kind.WHITESPACE &&  i >= offset && i <= end_offset) {
+                    name = token;
+                    break;
+                }
+            }
+            if (name === undefined) {
+                return symbols;
+            }
+            const variable = checker.variables.get(name);
+            if (variable === undefined) {
+                return symbols;
+            }
+            if (variable.definition) {
+                symbols.push(variable.definition.start);
+            }
+            symbols.push(...variable.references.map(n => n.start));
+
+            return symbols.sort((a, b) => a.offset - b.offset);
+        }
+
         return results;
 
         } catch (e) {
@@ -85,9 +112,9 @@ buttons.forEach((button, i) => {
                 errorOutput.textContent = "[ERROR]:\n" + e.message;
             }
             error_button.classList.add("error");
-            return tokens;
         }
-        
+
+        return tokens;
     };
     const file = localStorage.getItem("som");
     if (file) {

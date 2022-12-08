@@ -1,7 +1,7 @@
 import {Token, Kind} from "./token.ts";
 import { Type } from "./type.ts";
 
-export function summarize_node(node: AstNode) {
+export function nodeSummarize(node: AstNode) {
     const max_size = 40;
     const text = node.toString();
     let line = text.split("\n")[0].trim();

@@ -82,6 +82,7 @@ export function lex(lines: string[], file_name = "<eval>") : Token[]{
     const tokens: Token[] = []
     const buf: Buffer = new Buffer()
     let lineno = 0;
+    let line_offset = 0;
     for (const line of lines) {
         lineno++;
         buf.set(line);
@@ -93,7 +94,7 @@ export function lex(lines: string[], file_name = "<eval>") : Token[]{
                     num += buf.current;
                 }
                 tokens.push(
-                    new Token(Kind.NUMBER, num, line, lineno, start)
+                    new Token(Kind.NUMBER, num, line, lineno, start, line_offset+start)
                 );
             }
             else if(isAlpha(buf.current)) {
@@ -114,7 +115,7 @@ export function lex(lines: string[], file_name = "<eval>") : Token[]{
                     kind = Kind.ASMINSTR;
                 }
                 tokens.push(
-                    new Token(kind, word, line, lineno, start)
+                    new Token(kind, word, line, lineno, start, line_offset+start)
                 );
             }
             else {
@@ -133,11 +134,11 @@ export function lex(lines: string[], file_name = "<eval>") : Token[]{
                     if (symbol_kind === Kind.COMMENT) {
                         buf.done = true;
                         tokens.push(
-                            new Token(symbol_kind, line.substring(start), line, lineno, start)
+                            new Token(symbol_kind, line.substring(start), line, lineno, start, line_offset+start)
                         );
                     } else {
                         tokens.push(
-                            new Token(symbol_kind, current, line, lineno, start)
+                            new Token(symbol_kind, current, line, lineno, start, line_offset+start)
                         );
                     }
                 }
@@ -147,6 +148,7 @@ export function lex(lines: string[], file_name = "<eval>") : Token[]{
                 }
             }
         }
+        line_offset += line.length + 1;
     }
     return tokens;
 }

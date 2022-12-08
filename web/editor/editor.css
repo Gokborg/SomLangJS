@@ -56,6 +56,20 @@ editor-window textarea {
     min-height: 90vh;
 }
 
+editor-window .popup {
+    background-color: black;
+    color: white;
+    opacity: 0;
+    position: absolute;
+    pointer-events: none;
+}
+
+editor-window .popup:focus {
+    position: absolute;
+    opacity: 1;
+    pointer-events: inherit;
+}
+
 .pc-line {
     color: greenyellow;
     width: max-content;

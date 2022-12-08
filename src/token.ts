@@ -58,7 +58,12 @@ export class Token {
     public line: string,
     public lineno: number,
     public start: number,
+    public offset: number
   ){}
+
+  get end_offset(): number {
+    return this.offset + this.value.length;
+  }
 
   eq(kind: Kind): boolean {
     return this.kind == kind;

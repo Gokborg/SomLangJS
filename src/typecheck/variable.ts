@@ -3,7 +3,8 @@ import { Type } from "../type.ts";
 import { Scope } from "./scope.ts";
 
 export class Variable {
-  constructor(public scope: Scope, public type: Type, public node?: AstNode) {
+  references: AstNode[] = [];
+  constructor(public scope: Scope, public type: Type, public definition?: AstNode) {
 
   }
 }

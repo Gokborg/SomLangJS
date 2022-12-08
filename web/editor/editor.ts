@@ -8,6 +8,7 @@ export class Editor_Window extends HTMLElement {
     private input: HTMLTextAreaElement;
     private colors: HTMLElement;
     private lines: string[] = [];
+    private rename_box: HTMLInputElement;
     tab_width = 4
     constructor(){
         super();
@@ -17,6 +18,7 @@ export class Editor_Window extends HTMLElement {
                 this.input = l("textarea", {spellcheck: false}),
                 this.colors = l("code", {className: "colors"})
             ),
+            this.rename_box = l("input", {className: "popup"})
         );
 
         this.input.addEventListener("input", this.input_cb.bind(this));
@@ -26,7 +28,8 @@ export class Editor_Window extends HTMLElement {
         const resize_observer = new ResizeObserver(() => this.render_lines());
         resize_observer.observe(this);
     }
-    public get_tokens!: (src: string) => Token[]; 
+    public get_tokens!: (src: string) => Token[];
+    public get_symbols!: (index: number) => Token[];
 
     get value(){
         return this.input.value;
@@ -141,7 +144,6 @@ export class Editor_Window extends HTMLElement {
             const value = this.input.value;
             const start_line = value.substring(0, start).lastIndexOf("\n") + 1;
             if (!/^ +$/.test(this.value.substring(start_line, start))) {
-                console.log(start_line, start, JSON.stringify(this.value.substring(start_line, start)))
                 break backspace
             }
             const spaces = start - start_line;
@@ -181,6 +183,45 @@ export class Editor_Window extends HTMLElement {
             }
 
             this.input_cb();
+        }
+        if (event.key === "F2") {
+            const symbols = this.get_symbols(this.input.selectionStart);
+            if (symbols.length === 0) {
+                return;
+            }
+            const start = this.input.selectionStart;
+            this.rename_box.focus();
+            const onkey = (e: KeyboardEvent) => {
+                if (e.key !== "Enter") {return};
+                let selection_offset = 0;
+                const name = this.rename_box.value;
+                this.rename_box.blur();
+                const old = this.input.value;
+                let value = "";
+                let i = 0;
+                for (const {offset, end_offset} of symbols) {
+                    value += old.substring(i, offset);
+                    value += name;
+                    i = end_offset;
+                    if (end_offset <= start) {
+                        selection_offset += end_offset - offset - name.length;
+                    }
+                }
+                value += old.substring(i);
+                this.input.value = value;
+                this.input_cb();
+                this.input.focus();
+                this.input.selectionStart = this.input.selectionEnd = start + selection_offset;
+                e.preventDefault();
+
+            };
+            const onblur = () => {
+                this.rename_box.removeEventListener("keydown", onkey);
+                this.rename_box.removeEventListener("blur", onblur);
+                this.rename_box.value = "";
+            }
+            this.rename_box.addEventListener("keydown", onkey);
+            this.rename_box.addEventListener("blur", onblur);
         }
     }
     private input_cb(){

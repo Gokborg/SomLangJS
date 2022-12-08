@@ -5,11 +5,12 @@ import { Scopes } from "./scope.ts";
 import { checkCondition, checkExpr } from "./exprchecker.ts";
 import { Constant } from "./constant.ts";
 import { Variable } from "./variable.ts";
+import { Token } from "../token.ts";
 
 export class TypeChecker {
     types = new Map<ast.AstNode, Type>();
     constants = new Map<ast.AstNode, Constant>();
-    variables = new Map<ast.AstNode, Variable>();
+    variables = new Map<Token, Variable>();
     returns = new Set<ast.AstNode>();
     scopes = new Scopes();
 
@@ -65,15 +66,15 @@ export class TypeChecker {
     toString() {
         let output = "Types:\n";
         for (const [key, value] of this.types) {
-            output += `${value}: ${ast.summarize_node(key)}\n`;
+            output += `${value}: ${ast.nodeSummarize(key)}\n`;
         }
         output += "\nConstants:\n"
         for (const [key, value] of this.constants) {
-            output += `${value}: ${ast.summarize_node(key)}\n`;
+            output += `${value}: ${ast.nodeSummarize(key)}\n`;
         }
         output += "\nVariables:\n"
         for (const [key, value] of this.variables) {
-            output += `${value.type}: ${ast.summarize_node(key)}\n`;
+            output += `${value.type}: ${key}\n`;
         }
         
         output += "\nScopes:\n";
@@ -81,7 +82,7 @@ export class TypeChecker {
         
         output += "\nReturns:\n"
         for (const statement of this.returns) {
-            output += `${ast.summarize_node(statement)}\n`;
+            output += `${ast.nodeSummarize(statement)}\n`;
         }
 
         return output;
@@ -97,7 +98,7 @@ function collectStatementSymbol(checker: TypeChecker, node: ast.Statement) {
         const pointerType = new FunctionPointer(ret, args);
 
         const variable = checker.scopes.put(node.name.token.value, pointerType, node);
-        checker.variables.set(node, variable);
+        checker.variables.set(node.name.token, variable);
     }
 }
 
@@ -119,7 +120,7 @@ function checkStatement(checker: TypeChecker, node: ast.Statement) {
     } else if (node instanceof ast.DerefAssignment) {
         checkDerefAssignment(checker, node);
     } else if (node instanceof ast.FunctionDeclaration) {
-        const func = checker.variables.get(node);
+        const func = checker.variables.get(node.name.token);
         if (!(func?.type instanceof FunctionPointer)) {
             checker.err.error(node.start, `Missing variable on ${node}`);
             return;
@@ -279,7 +280,8 @@ function checkDeclaration(checker: TypeChecker, tree: ast.Declaration) {
     if (old) {
         checker.err.error(tree.name.token, "Redefined variable");
     } else {
-        checker.scopes.put(tree.name.token.value, type, tree.name);
+        const variable = checker.scopes.put(tree.name.token.value, type, tree.name);
+        checker.variables.set(tree.name.token, variable);
     }
     checker.set(tree.name, type);
 }
