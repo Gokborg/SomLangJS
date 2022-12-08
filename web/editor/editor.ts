@@ -154,6 +154,34 @@ export class Editor_Window extends HTMLElement {
             event.preventDefault();
             this.input_cb();
         }
+        if (event.altKey && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+            event.preventDefault();
+            const value = this.input.value;
+            const select_start = this.input.selectionStart;
+            const select_end = this.input.selectionEnd
+            const start = select_start === 0 ? 0 : value.lastIndexOf("\n", select_start-1) + 1;
+            const end = index_of(value, "\n", select_end);
+
+            if (event.key === "ArrowDown") {
+                const next_end = index_of(value, "\n", end+1);
+                if (next_end <= end) {
+                    return;
+                }
+                this.input.value = value.substring(0, start) + value.substring(end+1, next_end) + "\n" + value.substring(start, end+1) + value.substring(next_end+1);
+                this.input.selectionStart = select_start + next_end - end;
+                this.input.selectionEnd = select_end + next_end - end;
+            } else {
+                const last_start = start === 1 ? 0 : value.lastIndexOf("\n", start-2) + 1;
+                if (last_start >= start) {
+                    return;
+                } 
+                this.input.value = value.substring(0, last_start) + value.substring(start, end+1) + value.substring(last_start, start-1) + value.substring(end);
+                this.input.selectionStart = select_start + last_start - start;
+                this.input.selectionEnd = select_end + last_start - start;
+            }
+
+            this.input_cb();
+        }
     }
     private input_cb(){
         this.render_lines();
@@ -278,7 +306,6 @@ export class Editor_Window extends HTMLElement {
 }
 customElements.define("editor-window", Editor_Window);
 
-
 function str_splice(string: string, index: number, delete_count: number, insert: string){
     return string.slice(0, index) + insert + string.slice(index + delete_count);
 }
@@ -308,6 +335,11 @@ function line_start(string: string, index: number): number {
         }
     }
     return line_start;
+}
+
+function index_of(string: string, search: string, i: number) {
+    const index = string.indexOf(search, i);
+    return index < 0 ? string.length : index;
 }
 
 function regex_end(src: string, i: number, regex: RegExp): undefined | number {
